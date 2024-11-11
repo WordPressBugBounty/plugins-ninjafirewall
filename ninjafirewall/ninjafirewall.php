@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP Edition)
 Plugin URI: https://nintechnet.com/
 Description: A true Web Application Firewall to protect and secure WordPress.
-Version: 4.6.1
+Version: 4.7
 Author: The Ninja Technologies Network
 Author URI: https://nintechnet.com/
 License: GPLv3 or later
@@ -11,30 +11,22 @@ Network: true
 Text Domain: ninjafirewall
 Domain Path: /languages
 */
-
+define('NFW_ENGINE_VERSION', '4.7');
 /*
- +---------------------------------------------------------------------+
- | NinjaFirewall (WP Edition)                                          |
- |                                                                     |
- | (c) NinTechNet - https://nintechnet.com/                            |
- +---------------------------------------------------------------------+
-*/
-define('NFW_ENGINE_VERSION', '4.6.1');
-/*
- +---------------------------------------------------------------------+
- | This program is free software: you can redistribute it and/or       |
- | modify it under the terms of the GNU General Public License as      |
- | published by the Free Software Foundation, either version 3 of      |
- | the License, or (at your option) any later version.                 |
- |                                                                     |
- | This program is distributed in the hope that it will be useful,     |
- | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
- | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+
+ +=====================================================================+
+ |    _   _ _        _       _____ _                        _ _        |
+ |   | \ | (_)_ __  (_) __ _|  ___(_)_ __ _____      ____ _| | |       |
+ |   |  \| | | '_ \ | |/ _` | |_  | | '__/ _ \ \ /\ / / _` | | |       |
+ |   | |\  | | | | || | (_| |  _| | | | |  __/\ V  V / (_| | | |       |
+ |   |_| \_|_|_| |_|/ |\__,_|_|   |_|_|  \___| \_/\_/ \__,_|_|_|       |
+ |                |__/                                                 |
+ |  (c) NinTechNet Limited ~ https://nintechnet.com/                   |
+ +=====================================================================+
 */
 
-if (! defined('ABSPATH') ) { die('Forbidden'); }
+if (! defined('ABSPATH') ) {
+	die('Forbidden');
+}
 
 /* ------------------------------------------------------------------ */
 
@@ -100,6 +92,22 @@ if (! empty($_SERVER['DOCUMENT_ROOT']) && $_SERVER['DOCUMENT_ROOT'] != '/' ) {
 }
 
 /* ------------------------------------------------------------------ */
+
+/**
+ * Select whether we want to use PHP or NF sessions.
+ */
+if ( defined('NFWSESSION') ) {
+	if (! defined('NFWSESSION_DIR') ) {
+		/**
+		 * NFWSESSION_DIR can be defined in the .htninja.
+		 */
+		define('NFWSESSION_DIR', NFW_LOG_DIR .'/session');
+	}
+	require_once __DIR__ .'/lib/class-nfw-session.php';
+} else {
+	require_once __DIR__ .'/lib/class-php-session.php';
+}
+
 // class-helpers could be already loaded if the firewall is loaded
 require_once __DIR__ . '/lib/class-helpers.php';
 
@@ -385,11 +393,11 @@ function nfw_admin_init() {
 	// updated even for whitelisted non-admin users (must be logged-in
 	// to prevent unauthenticated AJAX calls to trigger it):
 	if ( is_user_logged_in() ) {
-		nfw_session_start();
+		NinjaFirewall_session::start();
 		// Save user's capabilities
 		$nf_user = wp_get_current_user();
 		if ( $nf_user instanceof WP_User ) {
-			$_SESSION['allcaps'] = $nf_user->allcaps;
+			NinjaFirewall_session::write( ['allcaps' => $nf_user->allcaps ] );
 		}
 	}
 
@@ -521,15 +529,14 @@ function nfw_admin_init() {
 
 	// Applies to admin only (unlike the WP+ Edition):
 	if (! empty( $nfw_options['wl_admin'] ) ) {
-		$_SESSION['nfw_goodguy'] = true;
 		if (! empty( $nfw_options['bf_enable'] ) && ! empty( $nfw_options['bf_rand'] ) ) {
-			$_SESSION['nfw_bfd'] = $nfw_options['bf_rand'];
+			NinjaFirewall_session::write( ['nfw_goodguy' => true, 'nfw_bfd' => $nfw_options['bf_rand'] ] );
+		} else {
+			NinjaFirewall_session::write( ['nfw_goodguy' => true ] );
 		}
 		return;
 	}
-	if ( isset( $_SESSION['nfw_goodguy'] ) ) {
-		unset( $_SESSION['nfw_goodguy'] );
-	}
+	NinjaFirewall_session::delete('nfw_goodguy');
 }
 
 add_action('admin_init', 'nfw_admin_init' );
@@ -552,7 +559,7 @@ add_action('init', 'nfw_init_emailremoval' );
 
 function nfw_login_hook( $user_login, $user ) {
 
-	nfw_session_start();
+	NinjaFirewall_session::start();
 
 	$nfw_options = nfw_get_option( 'nfw_options' );
 
@@ -592,16 +599,12 @@ function nfw_login_hook( $user_login, $user ) {
 	//Whitelist:
 	if (! empty( $nfw_options['wl_admin']) ) {
 		if ( ( $nfw_options['wl_admin'] == 1 && isset( $admin_flag ) ) || $nfw_options['wl_admin'] == 2 ) {
-			// Set the goodguy flag:
-			$_SESSION['nfw_goodguy'] = 1;
+			// Set the goodguy flag
+			NinjaFirewall_session::write( ['nfw_goodguy' => true ] );
 			return;
 		}
 	}
-
-	// Clear the flag, this user isn't whitelisted:
-	if ( isset( $_SESSION['nfw_goodguy'] ) ) {
-		unset( $_SESSION['nfw_goodguy'] );
-	}
+	NinjaFirewall_session::delete('nfw_goodguy');
 }
 
 // Hook priority can be defined in the wp-config.php or .htninja
@@ -615,17 +618,13 @@ add_action( 'wp_login', 'nfw_login_hook', $NFW_LOGINHOOK, 2 );
 /* ------------------------------------------------------------------ */
 function nfw_logout_hook() {
 
-	nfw_session_start();
+	NinjaFirewall_session::start();
 
-	if ( isset( $_SESSION['nfw_goodguy'] ) ) {
-		unset( $_SESSION['nfw_goodguy'] );
-	}
-	if (isset( $_SESSION['nfw_livelog'] ) ) {
-		unset( $_SESSION['nfw_livelog'] );
-	}
-	if (isset( $_SESSION['allcaps'] ) ) {
-		unset( $_SESSION['allcaps'] );
-	}
+	// Whoever it was, we clear the goodguy flag
+	NinjaFirewall_session::delete('nfw_goodguy');
+	// And the Live Log flag as well
+	NinjaFirewall_session::delete('nfw_livelog');
+	NinjaFirewall_session::delete('allcaps');
 }
 
 add_action( 'wp_logout', 'nfw_logout_hook' );

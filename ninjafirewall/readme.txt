@@ -2,8 +2,8 @@
 Contributors: nintechnet, bruandet
 Tags: security, firewall, malware, virus, protection
 Requires at least: 4.9
-Tested up to: 6.6
-Stable tag: 4.6.1
+Tested up to: 6.7
+Stable tag: 4.7
 Requires PHP: 7.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -118,7 +118,7 @@ Check out our new supercharged edition: [NinjaFirewall WP+ Edition](https://nint
 
 = Requirements =
 
-* WordPress 4.7+
+* WordPress 4.9+
 * Admin/Superadmin with `manage_options` + `unfiltered_html capabilities`.
 * PHP 7.1+
 * MySQL or MariaDB with MySQLi extension
@@ -207,6 +207,14 @@ WordPress Sicherheit Plugin.
 == Changelog ==
 
 Need more security? Take the time to explore our supercharged Premium edition: [NinjaFirewall WP+ Edition](https://nintechnet.com/ninjafirewall/wp-edition/?comparison)
+
+= 4.7 =
+
+* This new version introduces NinjaFirewall sessions, an alternative to PHP sessions. They are an hybrid of PHP sessions and object caching, without session blocking. If you want to switch between PHP sessions and NinjaFirewall sessions, go to "NinjaFirewall > Dashboard" and follow the instructions.
+* Fixed a "Undefined constant NFW_RULES" fatal error when migrating NinjaFirewall to another host.
+* We have a new API (updates, security rules etc): api.nintechnet.com. Make sure to whitelist this subdomain if you are filtering outgoing connections.
+* Updated Charts.js.
+* WP+ Edition (Premium): Updated GeoIP databases.
 
 = 4.6.1 =
 

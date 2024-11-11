@@ -113,39 +113,6 @@ if (! function_exists('nfw_is_https') ) {
 nfw_is_https();
 
 // ---------------------------------------------------------------------
-// Start a PHP session.
-
-function nfw_session_start() {
-
-	if (! headers_sent() ) {
-
-		if (! function_exists('session_status') ) {
-			if (! session_id() ) {
-				nfw_ini_set_cookie();
-				session_start();
-			}
-		} else {
-			if ( session_status() !== PHP_SESSION_ACTIVE ) {
-				nfw_ini_set_cookie();
-				session_start();
-			}
-		}
-	}
-}
-
-// ---------------------------------------------------------------------
-
-function nfw_ini_set_cookie() {
-
-	if ( defined('NFW_IS_HTTPS') && NFW_IS_HTTPS == true ) {
-		@ini_set('session.cookie_secure', 1);
-	}
-
-	@ini_set('session.cookie_httponly', 1);
-	@ini_set('session.use_only_cookies', 1);
-}
-
-// ---------------------------------------------------------------------
 // Check whether the user is whitelisted (.htninja etc).
 
 function nfw_is_whitelisted() {
@@ -163,7 +130,9 @@ function nf_wp_insert_post_empty_content( $maybe_empty, $postarr ) {
 
 	$nfw_options = nfw_get_option('nfw_options');
 
-	if ( isset( $_SESSION['nfw_goodguy'] ) || nfw_is_whitelisted() || empty( $nfw_options['enabled'] ) || empty( $nfw_options['disallow_publish'] ) ) {
+	if (! empty( NinjaFirewall_session::read('nfw_goodguy') ) || nfw_is_whitelisted() ||
+		empty( $nfw_options['enabled'] ) || empty( $nfw_options['disallow_publish'] ) ) {
+
 		return false;
 	}
 
@@ -259,8 +228,8 @@ function nf_wp_insert_post_empty_content( $maybe_empty, $postarr ) {
 			unlink( $return['nftmpfname'] );
 		}
 
-		// Block it:
-		$_SESSION = array();
+		// Block it
+		NinjaFirewall_session::delete();
 		wp_die(
 			'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
 			'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
@@ -278,7 +247,9 @@ function nf_pre_delete_post( $delete, $post, $force_delete ) {
 
 	$nfw_options = nfw_get_option('nfw_options');
 
-	if ( isset( $_SESSION['nfw_goodguy'] ) || nfw_is_whitelisted() || empty( $nfw_options['enabled'] ) || empty( $nfw_options['disallow_publish'] ) ) {
+	if (! empty( NinjaFirewall_session::read('nfw_goodguy') ) || nfw_is_whitelisted() ||
+		empty( $nfw_options['enabled'] ) || empty( $nfw_options['disallow_publish'] ) ) {
+
 		return null;
 	}
 
@@ -331,8 +302,8 @@ function nf_pre_delete_post( $delete, $post, $force_delete ) {
 				unlink( $return['nftmpfname'] );
 			}
 
-			// Block it:
-			$_SESSION = array();
+			// Block it
+			NinjaFirewall_session::delete();
 			wp_die(
 				'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
 				'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
@@ -364,14 +335,6 @@ function nf_pre_http_request( $preempt, $r, $url ) {
 	}
 	return false;
 }
-
-// Get rid of the Site Health php_sessions test, it returns a scary message
-// although everything is working as expected
-function nfw_remove_php_sessions_test( $tests ) {
-    unset( $tests['direct']['php_sessions'] );
-    return $tests;
-}
-add_filter('site_status_tests', 'nfw_remove_php_sessions_test');
 
 // ---------------------------------------------------------------------
 // Return backtrace verbosity.
@@ -442,8 +405,8 @@ function nfw_delete_user( $user_id ) {
 		unlink( $return['nftmpfname'] );
 	}
 
-	// Block it:
-	$_SESSION = array();
+	// Block it
+	NinjaFirewall_session::delete();
 	wp_die(
 		'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
 		'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
@@ -497,8 +460,8 @@ function nfw_account_creation( $user_login ) {
 		unlink( $return['nftmpfname'] );
 	}
 
-	// Block it:
-	$_SESSION = array();
+	// Block it
+	NinjaFirewall_session::delete();
 	wp_die(
 		'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
 		'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
@@ -638,6 +601,23 @@ function nfw_garbage_collector() {
 		// Delete it, if it is too old
 		if ( $now - $nfw_options['fg_mtime'] * 3660 > $nfw_ctime ) {
 			unlink( $file );
+		}
+	}
+
+	/**
+	 * Remove older session files if they were untouched for 24mn (1440 sec).
+	 * Note: NFWSESS_MAXLIFETIME can be defined in the wp-config.php or .htninja.
+	 */
+	if ( defined('NFWSESSION_DIR') ) {
+		if (! defined('NFWSESS_MAXLIFETIME') ) {
+			define('NFWSESS_MAXLIFETIME', 1440);
+		}
+		$list = NinjaFirewall_helpers::nfw_glob( NFWSESSION_DIR, '^sess_', true, true );
+		foreach( $list as $file ) {
+			$sess_time = filemtime( $file );
+			if ( $sess_time + NFWSESS_MAXLIFETIME < $now ) {
+				wp_delete_file( $file );
+			}
 		}
 	}
 
@@ -857,7 +837,7 @@ function nfw_send_loginemail( $user_login, $whoami ) {
 
 function nfw_query( $query ) {
 
-	if ( isset($_SESSION['nfw_goodguy']) || nfw_is_whitelisted() ) {
+	if (! empty( NinjaFirewall_session::read('nfw_goodguy') ) || nfw_is_whitelisted() ) {
 		return;
 	}
 
@@ -874,7 +854,7 @@ function nfw_query( $query ) {
 		} else {
 			$tmp = 'author';
 		}
-		$_SESSION = array();
+		NinjaFirewall_session::delete();
 		$query->set('author_name', '0');
 		nfw_log2('User enumeration scan (author archives)', $tmp, 2, 0);
 		wp_safe_redirect( home_url('/') );
@@ -887,7 +867,7 @@ add_action('pre_get_posts','nfw_query');
 // ---------------------------------------------------------------------
 add_filter('wp_sitemaps_add_provider', function ($provider, $name) {
 
-	if ( isset($_SESSION['nfw_goodguy']) || nfw_is_whitelisted() ) {
+	if (! empty( NinjaFirewall_session::read('nfw_goodguy') ) || nfw_is_whitelisted() ) {
 		return $provider;
 	}
 	$nfw_options = nfw_get_option('nfw_options');
@@ -905,7 +885,7 @@ add_filter('wp_sitemaps_add_provider', function ($provider, $name) {
 
 function nfw_the_author( $display_name ) {
 
-	if ( isset( $_SESSION['nfw_goodguy'] ) || nfw_is_whitelisted() ) {
+	if (! empty( NinjaFirewall_session::read('nfw_goodguy') ) || nfw_is_whitelisted() ) {
 		return $display_name;
 	}
 	$nfw_options = nfw_get_option('nfw_options');
@@ -940,7 +920,7 @@ add_filter('wp_is_application_passwords_available', 'nfw_no_application_password
 function nfwhook_rest_authentication_errors( $res ) {
 
 	// Whitelisted user?
-	if ( nfw_is_whitelisted() || isset($_SESSION['nfw_goodguy']) ) {
+	if ( nfw_is_whitelisted() || ! empty( NinjaFirewall_session::read('nfw_goodguy') ) ) {
 		return $res;
 	}
 
@@ -984,7 +964,7 @@ add_filter('rest_authentication_errors', 'nfwhook_rest_authentication_errors');
 function nfwhook_rest_request_before_callbacks( $res, $hnd, $req ) {
 
 	// Whitelisted user?
-	if ( nfw_is_whitelisted() || isset($_SESSION['nfw_goodguy']) ) {
+	if ( nfw_is_whitelisted() || ! empty( NinjaFirewall_session::read('nfw_goodguy') ) ) {
 		return $res;
 	}
 
@@ -1316,8 +1296,8 @@ function nfwhook_user_meta( $id, $key, $value ) {
 			unlink( $return['nftmpfname'] );
 		}
 
-		// Block it:
-		$_SESSION = array();
+		// Block it
+		NinjaFirewall_session::delete();
 		wp_die(
 			'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
 			'NinjaFirewall: '. __('You are not allowed to perform this task.', 'ninjafirewall'),
@@ -1330,8 +1310,10 @@ function nfwhook_user_meta( $id, $key, $value ) {
 
 function nfw_login_form_hook( $message ) {
 
-	if (! empty( $_SESSION['nfw_bfd'] ) ) {
-		return '<p class="message" id="nfw_login_msg">'. __('NinjaFirewall brute-force protection is enabled and you are temporarily whitelisted.', 'ninjafirewall') . '</p><br />';
+	if (! empty( NinjaFirewall_session::read('nfw_bfd') ) ) {
+		return '<p class="message" id="nfw_login_msg">'.
+			esc_html__('NinjaFirewall brute-force protection is enabled and you are temporarily whitelisted.', 'ninjafirewall') .
+			'</p><br />';
 	}
 	return $message;
 }
@@ -1393,11 +1375,11 @@ function nfw_session_debug() {
 	if ( empty( $show_session_icon ) ) { return; }
 
 	// Check if the user whitelisted?
-	if ( empty( $_SESSION['nfw_goodguy'] ) ) {
-		// No:
+	if ( empty( NinjaFirewall_session::read('nfw_goodguy') ) ) {
+		// No
 		$font = 'ff0000';
 	} else {
-		// Yes:
+		// Yes
 		$font = '00ff00';
 	}
 

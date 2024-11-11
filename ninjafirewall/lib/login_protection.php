@@ -400,7 +400,7 @@ function nf_sub_loginprot_save() {
 	} else {
 		$bf_enable = 0;
 		// Clear session
-		unset( $_SESSION['nfw_bfd'] );
+		NinjaFirewall_session::delete('nfw_bfd');
 	}
 
 	if (! empty( $_POST['nfw_options']['bf_type'] ) && preg_match( '/^[01]$/', $_POST['nfw_options']['bf_type'] ) ) {
@@ -513,9 +513,9 @@ function nf_sub_loginprot_save() {
 		@opcache_invalidate( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php', true );
 	}
 
-	// Whitelist the admin:
+	// Whitelist the admin
 	if ( $bf_enable ) {
-		$_SESSION['nfw_bfd'] = $bf_rand;
+		NinjaFirewall_session::write( ['nfw_bfd' => $bf_rand ] );
 	}
 
 	// Delete cached files
