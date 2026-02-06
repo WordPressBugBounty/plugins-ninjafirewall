@@ -77,15 +77,11 @@ if (! is_dir($nfw_['log_dir']) ) {
 }
 
 /**
- * 2025-09-03: We temporarily force NinjaFirewall session on all new installs.
+ * Select whether we want to use PHP or NF (default since v4.8.1) sessions.
  */
-if ( is_file( "{$nfw_['log_dir']}/ninjasession" ) && ! defined('NFWSESSION') ) {
-	define('NFWSESSION', true );
-}
-/**
- * Select whether we want to use PHP or NinjaFirewall session.
- */
-if ( defined('NFWSESSION') ) {
+if ( is_file( "{$nfw_['log_dir']}/phpsession" ) ) {
+	require_once __DIR__ .'/class-php-session.php';
+} else {
 	if (! defined('NFWSESSION_DIR') ) {
 		/**
 		 * NFWSESSION_DIR can be defined in the .htninja.
@@ -93,8 +89,6 @@ if ( defined('NFWSESSION') ) {
 		define('NFWSESSION_DIR', "{$nfw_['log_dir']}/session" );
 	}
 	require_once __DIR__ .'/class-nfw-session.php';
-} else {
-	require_once __DIR__ .'/class-php-session.php';
 }
 
 // Get/set PID
@@ -455,7 +449,15 @@ function nfw_connect() {
 		return 3;
 	}
 
-	nfw_check_dbhost();
+	/**
+	 * Parse hostname/port and socket.
+	 */
+	require_once __DIR__ .'/class-nfw-database.php';
+	$host_data = NinjaFirewall_fwdatabase::parse_db_host( $nfw_['DB_HOST'] );
+	if ( $host_data ) {
+		list( $nfw_['DB_HOST'], $nfw_['port'], $nfw_['socket'] ) = $host_data;
+	}
+
 	// Make sure mysqli extension is loaded
 	if (! function_exists( 'mysqli_real_connect' ) ) {
 		return 14;
@@ -963,13 +965,17 @@ function nfw_matching( $where, $key, $nfw_rules, $rules, $subid, $id, $nfw_optio
 		$val = $GLOBALS['_'.$where][$key];
 	}
 
-	// Check if the user has the required capability, if any
-	$allcaps = NinjaFirewall_session::read('allcaps');
-	if ( isset( $rules['cpb'] ) && ! empty( $allcaps ) ) {
-		$caps = explode( '|', $rules['cpb'] );
-		foreach( $caps as $cap ) {
-			if ( isset( $allcaps[$cap] ) ) {
-				return 0;
+	/**
+	 * Check if the user has the required capability, if any.
+	 */
+	if ( isset( $rules['cpb'] ) ) {
+		$allcaps = NinjaFirewall_session::read('allcaps');
+		if (! empty( $allcaps ) ) {
+			$caps = explode('|', $rules['cpb'] );
+			foreach( $caps as $cap ) {
+				if ( isset( $allcaps[$cap] ) ) {
+					return 0;
+				}
 			}
 		}
 	}
@@ -1895,38 +1901,12 @@ function nfw_get_captcha() {
 	imagepng( $image );
 	$img_content = ob_get_contents();
 	ob_end_clean();
-	imagedestroy( $image );
 
 	$res = '<img src="data:image/png;base64,'. base64_encode( $img_content ) .'" />';
 
 	NinjaFirewall_session::write( ['nfw_bfd_c' => strtolower( $captcha ) ] );
 
 	return $res;
-}
-
-// ===================================================================== 2023-05-16
-// From WP db_connect()
-
-function nfw_check_dbhost() {
-
-	global $nfw_;
-
-	$nfw_['port']		= null;
-	$nfw_['socket']	= null;
-	$port_or_socket	= strstr( $nfw_['DB_HOST'], ':');
-	if ( ! empty( $port_or_socket ) ) {
-		$nfw_['DB_HOST']	= substr( $nfw_['DB_HOST'], 0, strpos( $nfw_['DB_HOST'], ':') );
-		$port_or_socket	= substr( $port_or_socket, 1 );
-		if ( 0 !== strpos( $port_or_socket, '/') ) {
-			$nfw_['port']	= intval( $port_or_socket );
-			$maybe_socket	= strstr( $port_or_socket, ':');
-			if ( ! empty( $maybe_socket ) ) {
-				$nfw_['socket'] = substr( $maybe_socket, 1 );
-			}
-		} else {
-			$nfw_['socket'] = $port_or_socket;
-		}
-	}
 }
 
 // ===================================================================== 2023-05-16

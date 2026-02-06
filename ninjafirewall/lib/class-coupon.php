@@ -56,7 +56,13 @@ class NinjaFirewall_coupon {
 		$until = 'This offer is valid until '.
 					date('F d', strtotime( $this->options['coupon']['date'] ) );
 
-		echo '<a href="https://nintechnet.com/" alt="Go Pro! Limited time offer" '.
+		if (! empty( $this->options['coupon']['url'] ) ) {
+			$url = $this->options['coupon']['url'];
+		} else {
+			$url = 'https://nintechnet.com/';
+		}
+
+		echo '<a href="'. esc_url( $url ) .'" alt="Go Pro! Limited time offer" '.
 			'title="Go Pro! Limited time offer" target="_blank" rel="noreferrer noopener">'.
 			'<img style="max-width:250px" src="data:image/png;base64, '. esc_attr( $data ) .'" />'.
 			'<br />'. esc_html( $until ) .'</a>';
@@ -71,7 +77,7 @@ class NinjaFirewall_coupon {
 		 * We run on the main site only.
 		 */
 		if (! is_main_site() ) {
-			return ['error' => 'child site'];;
+			return ['error' => 'child site'];
 		}
 
 		/**
@@ -99,7 +105,10 @@ class NinjaFirewall_coupon {
 				'user-agent'	=> 'Mozilla/5.0 (compatible; NinjaFirewall/'.
 										NFW_ENGINE_VERSION ."; WordPress/$wp_version)",
 				'sslverify'		=> true,
-				'ntn-plugin'	=> 'nf'
+				'headers' => [
+					'ntn-plugin'	=> 'nf',
+					'ntn-cache'		=>	md5( network_site_url() )
+				]
 			]
 		);
 		if (! is_wp_error( $res ) && $res['response']['code'] == 200 ) {

@@ -2,8 +2,8 @@
 Contributors: nintechnet, bruandet
 Tags: security, firewall, malware, virus, protection
 Requires at least: 4.9
-Tested up to: 6.8
-Stable tag: 4.8
+Tested up to: 6.9
+Stable tag: 4.8.3
 Requires PHP: 7.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -207,6 +207,23 @@ WordPress Sicherheit Plugin.
 == Changelog ==
 
 Need more security? Take the time to explore our supercharged Premium edition: [NinjaFirewall WP+ Edition](https://nintechnet.com/ninjafirewall/wp-edition/?comparison)
+
+= 4.8.3 =
+
+* When running in "Full WAF mode", NinjaFirewall will automatically detect if the SQL database is listening on IPv6.
+* WP+ Edition (Premium): Updated IP location databases.
+* WP+ Edition (Premium): updated the whitelist of webhook IP addresses of payment processors.
+* Updated Chartjs library.
+* Small fixes and adjustments.
+
+= 4.8.2 =
+
+* Fixed a "No such file or directory" PHP error due to a wrong path to the session folder (props @gosuccess).
+
+= 4.8.1 =
+
+* All active installations will now use NinjaFirewall sessions instead of PHP's.
+* Added compatibility with PHP 8.5, which will be released in a few weeks.
 
 = 4.8 =
 
