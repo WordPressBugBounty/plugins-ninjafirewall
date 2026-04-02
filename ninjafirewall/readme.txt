@@ -3,7 +3,7 @@ Contributors: nintechnet, bruandet
 Tags: security, firewall, malware, virus, protection
 Requires at least: 4.9
 Tested up to: 6.9
-Stable tag: 4.8.4
+Stable tag: 4.8.5
 Requires PHP: 7.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -105,6 +105,7 @@ Check out our new supercharged edition: [NinjaFirewall WP+ Edition](https://nint
 * Country-based Access Control via geolocation.
 * URL-based Access Control.
 * Bot-based Access Control.
+* Import/Export the configuration from WP-CLI.
 * [Centralized Logging](https://blog.nintechnet.com/centralized-logging-with-ninjafirewall/ "Centralized Logging").
 * Antispam for comment and user regisration forms.
 * Rate limiting option to block aggressive bots, crawlers, web scrapers and HTTP attacks.
@@ -207,6 +208,11 @@ WordPress Sicherheit Plugin.
 == Changelog ==
 
 Need more security? Take the time to explore our supercharged Premium edition: [NinjaFirewall WP+ Edition](https://nintechnet.com/ninjafirewall/wp-edition/?comparison)
+
+= 4.8.5 =
+
+* Behind-the-scenes update: All the code dealing with exporting, importing and restoring the configuration was rewritten.
+* WP+ Edition (Premium): You can import/export the configuration from WP-CLI. See `$ wp ninjafirewall help` for usage.
 
 = 4.8.4 =
 

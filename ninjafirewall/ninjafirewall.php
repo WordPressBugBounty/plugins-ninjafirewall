@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP Edition)
 Plugin URI: https://nintechnet.com/
 Description: A true Web Application Firewall to protect and secure WordPress.
-Version: 4.8.4
+Version: 4.8.5
 Author: The Ninja Technologies Network
 Author URI: https://nintechnet.com/
 License: GPLv3 or later
@@ -11,7 +11,7 @@ Network: true
 Text Domain: ninjafirewall
 Domain Path: /languages
 */
-define('NFW_ENGINE_VERSION', '4.8.4');
+define('NFW_ENGINE_VERSION', '4.8.5');
 /*
  +=====================================================================+
  |    _   _ _        _       _____ _                        _ _        |
@@ -422,27 +422,13 @@ function nfw_admin_init() {
 		nfw_verify_secupdates();
 	}
 
-	// Export configuration:
-	if ( isset($_POST['nf_export']) ) {
-		if ( empty($_POST['nfwnonce']) || ! wp_verify_nonce($_POST['nfwnonce'], 'options_save') ) {
-			wp_nonce_ays('options_save');
-		}
-		$nfwbfd_log = NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php';
-		if ( file_exists($nfwbfd_log) ) {
-			$bd_data = json_encode( file_get_contents($nfwbfd_log) );
-		} else {
-			$bd_data = '';
-		}
-		// Dropins
-		if ( file_exists( NFW_LOG_DIR .'/nfwlog/dropins.php' ) ) {
-			$nfw_rules['dropins'] = base64_encode( file_get_contents( NFW_LOG_DIR .'/nfwlog/dropins.php' ) );
-		}
-		$data = json_encode($nfw_options) . "\n:-:\n" . json_encode($nfw_rules) . "\n:-:\n" . $bd_data;
-		header('Content-Type: text/plain');
-		header('Content-Length: '. strlen( $data ) );
-		header('Content-Disposition: attachment; filename="nfwp.' . NFW_ENGINE_VERSION . '.dat"');
-		echo $data;
-		exit;
+	/**
+	 * Export NinjaFirewall's configuration.
+	 */
+	if ( isset( $_POST['ninjafirewall_export'] ) ) {
+
+		require_once __DIR__ .'/lib/class-import-export.php';
+		NinjaFirewall_ImpExp::export();
 	}
 
 	// Download File Check modified files list:
