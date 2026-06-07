@@ -2,8 +2,8 @@
 Contributors: nintechnet, bruandet
 Tags: security, firewall, malware, virus, protection
 Requires at least: 4.9
-Tested up to: 6.9
-Stable tag: 4.8.5
+Tested up to: 7.0
+Stable tag: 4.8.6
 Requires PHP: 7.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -114,7 +114,7 @@ Check out our new supercharged edition: [NinjaFirewall WP+ Edition](https://nint
 * Better logs management.
 * [Syslog logging](https://blog.nintechnet.com/syslog-logging-with-ninjafirewall/ "Syslog logging").
 
-[Learn more](https://nintechnet.com/ninjafirewall/wp-edition/ "") about the WP+ Edition unique features. [Compare](https://nintechnet.com/ninjafirewall/wp-edition/?comparison "") the WP and WP+ Editions.
+[Learn more](https://nintechnet.com/ninjafirewall/wp-edition/ "") about the WP+ Edition unique features. [Compare](https://nintechnet.com/ninjafirewall/wp-edition/#features "") the WP and WP+ Editions.
 
 
 = Requirements =
@@ -207,7 +207,15 @@ WordPress Sicherheit Plugin.
 
 == Changelog ==
 
-Need more security? Take the time to explore our supercharged Premium edition: [NinjaFirewall WP+ Edition](https://nintechnet.com/ninjafirewall/wp-edition/?comparison)
+Need more security? Take the time to explore our supercharged Premium edition: [NinjaFirewall WP+ Edition](https://nintechnet.com/ninjafirewall/wp-edition/#features)
+
+= 4.8.6 =
+
+* Many small fixes and adjustments to make NinjaFirewall better.
+* Renamed/standardised all filenames to improve project readability and maintainability.
+* Errors occurring during the firewall activation will be displayed with all details.
+* WP+ Edition (Premium): the bot list is now sorted in alphabetic order.
+* WP+ Edition (Premium): Updated IP location databases.
 
 = 4.8.5 =
 
