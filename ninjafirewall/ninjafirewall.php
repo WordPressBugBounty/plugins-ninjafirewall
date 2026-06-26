@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP Edition)
 Plugin URI: https://nintechnet.com/
 Description: A true Web Application Firewall to protect and secure WordPress.
-Version: 4.8.6
+Version: 4.8.7
 Author: The Ninja Technologies Network
 Author URI: https://nintechnet.com/
 License: GPLv3 or later
@@ -11,7 +11,7 @@ Network: true
 Text Domain: ninjafirewall
 Domain Path: /languages
 */
-define('NFW_ENGINE_VERSION', '4.8.6');
+define('NFW_ENGINE_VERSION', '4.8.7');
 /*
  +=====================================================================+
  |    _   _ _        _       _____ _                        _ _        |
@@ -569,8 +569,8 @@ add_action('admin_init', 'nfw_admin_init' );
 function nfw_init_emailremoval() {
 
 	if (! empty( $_GET['nfw_stop_notification'] ) ) {
-		require_once 'lib/email_sodium.php';
-		nfw_sodium_decrypt( $_GET['nfw_stop_notification'] );
+		require_once 'lib/class-email-sodium.php';
+		NinjaFirewall_emailsodium::sodium_decrypt( $_GET['nfw_stop_notification'] );
 	}
 
 }

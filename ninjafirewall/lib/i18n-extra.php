@@ -185,6 +185,7 @@ __('BB: the level of severity as it appears in the firewall log. It can be <code
 __('CCCCCCC: the 7-digit incident ID.', 'ninjafirewall');
 __('DD: the user IPv4 or IPv6 address.', 'ninjafirewall');
 __('EE: the blog (sub-)domain name.', 'ninjafirewall');
+__('On Debian, systemd-journald serves as the primary system log collector. Events can be viewed by running the following command:', 'ninjafirewall');
 __('This logging option does not apply to the brute-force protection which can be set up separately to write events to the server authentication log. See the <a href="%s">Login Protection</a> page.', 'ninjafirewall');
 __('Secret key: The secret key will be used to generate your public key. Enter at least 30 ASCII characters, or use the one randomly created by NinjaFirewall.', 'ninjafirewall');
 __('This server IP address: As an additional protection layer, you can restrict access to the remote website(s) to the main server IP only. You can use IPv4 or IPv6. If you do not want any IP restriction, enter the <code>*</code> character instead.', 'ninjafirewall');

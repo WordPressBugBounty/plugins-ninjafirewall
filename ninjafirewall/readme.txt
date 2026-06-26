@@ -3,7 +3,7 @@ Contributors: nintechnet, bruandet
 Tags: security, firewall, malware, virus, protection
 Requires at least: 4.9
 Tested up to: 7.0
-Stable tag: 4.8.6
+Stable tag: 4.8.7
 Requires PHP: 7.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -208,6 +208,14 @@ WordPress Sicherheit Plugin.
 == Changelog ==
 
 Need more security? Take the time to explore our supercharged Premium edition: [NinjaFirewall WP+ Edition](https://nintechnet.com/ninjafirewall/wp-edition/#features)
+
+= 4.8.7 =
+
+* Fixed a PHP warning in File Check.
+* Fixed a potential "Allowed memory size exhausted" error.
+* Several small fixes and adjustments under the hood.
+* WP+ Edition (Premium): Updates Stripe and Airwallex webhook notification IP addresses in the Access Control section.
+* WP+ Edition (Premium): Updated list of banned bots in the Access Control section.
 
 = 4.8.6 =
 

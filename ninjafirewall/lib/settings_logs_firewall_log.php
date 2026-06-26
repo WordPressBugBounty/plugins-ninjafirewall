@@ -84,14 +84,14 @@ if ( isset( $_GET['nfw_logname'] ) ) {
 	if ( empty( $_GET['nfwnonce'] ) || ! wp_verify_nonce($_GET['nfwnonce'], 'settings_log') ) {
 		wp_nonce_ays('settings_log');
 	}
-	$data = nf_sub_log_read_local( $_GET['nfw_logname'], $log_dir, $max_lines-1 );
+	$data = nf_sub_log_read_local( $_GET['nfw_logname'], $log_dir, $max_lines );
 }
 
 if ( isset( $_GET['nfw_logname'] ) && ! empty( $available_logs[$_GET['nfw_logname']] ) ) {
 	$selected_log = $_GET['nfw_logname'];
 } else {
 	$selected_log = $monthly_log;
-	$data = nf_sub_log_read_local( $monthly_log, $log_dir, $max_lines-1 );
+	$data = nf_sub_log_read_local( $monthly_log, $log_dir, $max_lines );
 }
 
 // Display a one-time notice after two weeks of use:
@@ -105,9 +105,15 @@ if ( ! empty( $ok_msg ) ) {
 	echo '<div class="updated notice is-dismissible"><p>' . $ok_msg . '</p></div>';
 }
 if ( isset( $data['lines'] ) && $data['lines'] > $max_lines ) {
-	echo '<div class="notice-info notice is-dismissible"><p>' . __('Note', 'ninjafirewall') . ': ' . sprintf( __('your log has %s lines. I will display the last %s lines only.', 'ninjafirewall'), $data['lines'], $max_lines ) . '</p></div>';
+	echo '<div class="notice-info notice is-dismissible"><p>' .
+		__('Note', 'ninjafirewall') . ': ' .
+		sprintf(
+			__('your log has more than %s lines. I will display the last %s lines only.', 'ninjafirewall'),
+			$max_lines,
+			$max_lines
+		) .
+	'</p></div>';
 }
-
 
 echo '<center>' . __('Viewing:', 'ninjafirewall') . ' <select onChange=\'window.location="?page=nfsublog&nfwnonce='. wp_create_nonce('settings_log') .'&nfw_logname=" + this.value;\'>';
 foreach ($available_logs as $log_name => $tmp) {
@@ -297,7 +303,7 @@ function nf_sub_log_read_local( $log, $log_dir, $max_lines ) {
 		wp_nonce_ays('settings_log');
 	}
 
-	$data = array();
+	$data = [];
 	$data['type'] = 'local';
 
 	if (! is_file( $log_dir . $log ) ) {
@@ -305,23 +311,25 @@ function nf_sub_log_read_local( $log, $log_dir, $max_lines ) {
 		return $data;
 	}
 
-	$data['log'] = file( $log_dir . $log, FILE_SKIP_EMPTY_LINES );
-
-	if ( $data['log'] === false ) {
+	$fp = fopen( $log_dir . $log, 'r');
+	if ( $fp === false ) {
 		$data['err_msg'] = __('Unable to open the log for read operation.', 'ninjafirewall');
 		return $data;
 	}
-	if ( strpos( $data['log'][0], '<?php' ) !== FALSE ) {
-		unset( $data['log'][0] );
-	}
-	$data['lines'] = count( $data['log'] );
-	if ( $max_lines < $data['lines'] ) {
-		for ($i = 0; $i < ( $data['lines'] - $max_lines); ++$i ) {
-			unset( $data['log'][$i] ) ;
+	while(! feof( $fp ) ) {
+		$line = fgets( $fp, 8192 );
+		if (! preg_match('`^\[\d{10}\]`', $line ) ) {
+			continue;
+		}
+		$data['log'][] = $line;
+		$data['lines'] = count( $data['log'] );
+		if ( $data['lines'] > $max_lines ) {
+			array_shift( $data['log'] );
 		}
 	}
+	fclose( $fp );
 
-	if ( $data['lines'] == 0 ) {
+	if ( empty( $data['log'] ) ) {
 		$data['err_msg'] = __('The selected log is empty.', 'ninjafirewall');
 	}
 

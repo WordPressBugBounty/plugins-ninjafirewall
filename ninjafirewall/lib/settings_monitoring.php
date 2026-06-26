@@ -14,14 +14,14 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n+ / sa / 2
+ +---------------------------------------------------------------------+
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 
 // File Check scheduled scan?
 if (defined('NFSCANDO') ) {
-	include __DIR__ .'/monitoring_file_check.php';
+	include __DIR__ .'/settings_monitoring_file_check.php';
 	return;
 }
 

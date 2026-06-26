@@ -424,7 +424,6 @@ function help_nfsublogin() {
 		<br />' .
 		__('If you have a shared hosting account, keep this option disabled as you do not have any access to the server\'s logs.', 'ninjafirewall') .
 		'<br />' .
-		__('On Debian-based systems, the log is located in <code>/var/log/auth.log</code>, and on Red Hat-based systems in <code>/var/log/secure</code>. The logline uses the following format:', 'ninjafirewall') .
 		'<p><code>ninjafirewall[<font color="red">AA</font>]: Possible brute-force attack from <font color="red">BB</font> on <font color="red">CC</font> (<font color="red">DD</font>). Blocking access for <font color="red">EE</font>mn.</code><p>
 		<ul>
 			<li>' . __('AA: the process ID (PID).', 'ninjafirewall') . '</li>
@@ -435,8 +434,11 @@ function help_nfsublogin() {
 		</ul>'.
 		__('Sample loglines:', 'ninjafirewall') .
 		'<br />
-		<textarea class="large-text code" style="height:80px;" wrap="off">Aug 31 01:40:35 www ninjafirewall[6191]: Possible brute-force attack from 172.16.0.1 on mysite.com (wp-login.php). Blocking access for 5mn.'. "\n" . 'Aug 31 01:45:28 www ninjafirewall[6192]: Possible brute-force attack from fe80::6e88:14ff:fe3e:86f0 on blog.domain.com (XML-RPC API). Blocking access for 25mn.</textarea>
-		<p><span class="dashicons dashicons-warning nfw-warning"></span>' . sprintf( __('Be careful if you are behind a load balancer, reverse-proxy or CDN because the Login Protection feature will always record the <code>REMOTE_ADDR</code> IP. If you have an application parsing the AUTH log in order to ban IPs (e.g. Fail2ban), you <strong>must</strong> setup your HTTP server to forward the correct IP (or use the <code><a href="%s">.htninja</a></code> file), otherwise you will likely block legitimate users.', 'ninjafirewall'), 'https://blog.nintechnet.com/ninjafirewall-wp-edition-the-htninja-configuration-file/') . '</p>
+		<textarea class="large-text code" style="height:80px;" wrap="off">Aug 31 01:40:35 www ninjafirewall[6191]: Possible brute-force attack from 172.16.0.1 on mysite.com (wp-login.php). Blocking access for 5mn.'. "\n" . 'Aug 31 01:45:28 www ninjafirewall[6192]: Possible brute-force attack from fe80::6e88:14ff:fe3e:86f0 on blog.domain.com (XML-RPC API). Blocking access for 25mn.</textarea>'.
+		'<p>'.
+		__('Note: On Debian, systemd-journald serves as the primary system log collector. Events can be viewed by running the following command:', 'ninjafirewall') .
+			'</p><p><code># journalctl -t ninjafirewall</code></p>'.
+		'<p><span class="dashicons dashicons-warning nfw-warning"></span>' . sprintf( __('Be careful if you are behind a load balancer, reverse-proxy or CDN because the Login Protection feature will always record the <code>REMOTE_ADDR</code> IP. If you have an application parsing the AUTH log in order to ban IPs (e.g. Fail2ban), you <strong>must</strong> setup your HTTP server to forward the correct IP (or use the <code><a href="%s">.htninja</a></code> file), otherwise you will likely block legitimate users.', 'ninjafirewall'), 'https://blog.nintechnet.com/ninjafirewall-wp-edition-the-htninja-configuration-file/') . '</p>
 		</div>'
 	) );
 
