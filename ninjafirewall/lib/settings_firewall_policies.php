@@ -933,7 +933,7 @@ wp_nonce_field('policies_save', 'nfwnonce', 0);
 				$nfw_options['csp_frontend_data'] = '';
 			}
 			if (! isset( $nfw_options['csp_backend_data'] ) ) {
-				$nfw_options['csp_backend_data'] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.videopress.com *.google.com *.wp.com *.youtu.be *.googleapis.com;";
+				$nfw_options['csp_backend_data'] = '';
 			}
 			if (! isset( $nfw_options['response_headers'][6] ) ) {
 				$nfw_options['response_headers'][6] = 0;

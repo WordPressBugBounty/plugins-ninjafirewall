@@ -516,19 +516,26 @@ function nf_sub_updates_download($update_url, $update_log, $new_rules_version) {
 				return 0;
 			}
 
-			// Verify rules digital signature:
-			if ( function_exists( 'openssl_pkey_get_public') && function_exists( 'openssl_verify' ) && defined('OPENSSL_ALGO_SHA256') ) {
-
-				$public_key = rtrim( file_get_contents( __DIR__ .'/sign.pub' ) );
-				$pubkeyid = openssl_pkey_get_public( $public_key );
-				$verify = openssl_verify( $data[2], base64_decode( $data[1] ), $pubkeyid, OPENSSL_ALGO_SHA256);
-				if ( $verify != 1 ) {
-					nf_sub_updates_log(
-						$update_log,
-						sprintf( __('Error: The new rules %s digital signature is not correct. Aborting update, rules may have been tampered with.', 'ninjafirewall'), htmlspecialchars($data[0]) )
-					);
-					return 0;
-				}
+			/**
+			 * Verify rules digital signature.
+			 */
+			if (! function_exists('openssl_verify') || ! defined('OPENSSL_ALGO_SHA256') ) {
+				nf_sub_updates_log(
+					$update_log,
+					__('Error: OpenSSL is required for rules verification.', 'ninjafirewall')
+				);
+				return 0;
+			}
+			$public_key = rtrim( file_get_contents( __DIR__ .'/sign.pub' ) );
+			$pubkeyid = openssl_pkey_get_public( $public_key );
+			$verify = openssl_verify( $data[2], base64_decode( $data[1] ), $pubkeyid, OPENSSL_ALGO_SHA256);
+			if ( $verify != 1 ) {
+				nf_sub_updates_log(
+					$update_log,
+					sprintf( __('Error: The new rules %s digital signature is not correct. Aborting update, rules may have been tampered with.', 'ninjafirewall'),
+					htmlspecialchars($data[0]) )
+				);
+				return 0;
 			}
 
 			// Save new rules version for install/upgrade:

@@ -348,28 +348,6 @@ function nf_pre_delete_post( $delete, $post, $force_delete ) {
 }
 
 // ---------------------------------------------------------------------
-// Write session to disk to prevent cURL time-out which may occur with
-// WordPress (since 4.9.2, see https://core.trac.wordpress.org/ticket/43358),
-// or plugins such as "Health Check".
-
-add_filter('pre_http_request', 'nf_pre_http_request', 10, 3 );
-
-function nf_pre_http_request( $preempt, $r, $url ) {
-
-	// NFW_DISABLE_SWC can be defined in wp-config.php (undocumented):
-	if (! defined('NFW_DISABLE_SWC') && isset( $_SESSION ) ) {
-		if ( function_exists('get_site_url') ) {
-			$parse = parse_url( get_site_url() );
-			$s_url = @$parse['scheme'] . "://{$parse['host']}";
-			if ( strpos( $url, $s_url ) === 0 ) {
-				@session_write_close();
-			}
-		}
-	}
-	return false;
-}
-
-// ---------------------------------------------------------------------
 // Return backtrace verbosity.
 
 function nfw_verbosity( $nfw_options ) {
@@ -1631,8 +1609,11 @@ function nfw_verify_secupdates() {
 	if (! function_exists('get_plugins') ) {
 		require_once ABSPATH .'wp-admin/includes/plugin.php';
 	}
-	$plugins = get_plugins();
-	$cleared = 0;
+
+	$plugins    = get_plugins();
+	$cleared    = 0;
+	$wp_updates = get_site_transient('update_plugins');
+
 	foreach( $plugins as $k => $v ) {
 		// No name or no version (unlike themes, we're dealing with arrays here)
 		if ( empty( $v['Name'] ) || empty( $v['Version'] ) ) {
@@ -1642,13 +1623,59 @@ function nfw_verify_secupdates() {
 		if ( isset( $nfw_checked['plugins'][$k] ) ) {
 			// Compare current and available versions
 			if ( version_compare( $v['Version'], $nfw_checked['plugins'][$k]['version'], '<') ) {
-				add_action( "in_plugin_update_message-{$k}", 'nfw_in_plugin_update_message', 10, 2 );
+
+				$args = [
+					'name'    => $v['Name'],
+					'plugin'  => $k,
+					'version' => $nfw_checked['plugins'][$k]['version'],
+					'nonce'   => wp_create_nonce('pluginupgrade'),
+					// We don't display the "Install now" button if WordPress allows the upgrade
+					'upgrade' => isset( $wp_updates->response[ $k ] ) ? false : true
+				];
+
+				add_action( "after_plugin_row_{$k}",
+				function() use ( $args ) {
+					?>
+					<tr class="plugin-update-tr active">
+						<td colspan="4" class="plugin-update colspanchange">
+							<div class="update-message notice inline notice-error notice-alt">
+							 <?php
+								echo esc_html__('Important: NinjaFirewall has detected that this is a security update.', 'ninjafirewall') . ' '.
+								esc_html__("Don't leave your blog at risk, make sure to update as soon as possible.", 'ninjafirewall');
+								echo '<br />';
+								echo '<strong>'. esc_html__('Plugin:', 'ninjafirewall') .'</strong> <em>'.
+										esc_html( $args['name'] ) .'</em> - <strong>'. esc_html__('New version:', 'ninjafirewall') .'</strong> <em>'.
+										esc_html( $args['version'] ) .'</em>';
+
+								if ( $args['upgrade'] ) {
+									echo '<p>' . esc_html__('Because this update was released less than 24 hours ago and WordPress.org enforces a mandatory 24-hour update delay on all new plugin releases, NinjaFirewall allows you to update it immediately by clicking the button below.', 'ninjafirewall') .'</p>';
+									?>
+									<button type="button" id="nf-progress-id" class="button button-secondary" onClick="nfwjs_upgrade_plugin('<?php
+									echo esc_attr( $args['plugin'] ) ?>','<?php
+									echo esc_attr( $args['version'] ) ?>','<?php
+									echo esc_attr( $args['nonce'] ) ?>')" />
+									<?php
+									echo esc_html__('Update the plugin now!', 'ninjafirewall' )?></button>
+									&nbsp;&nbsp;&nbsp;
+									<img style="vertical-align:middle;display:none" id="nf-progress-gif" src="<?php
+										echo plugins_url('/images/progress.gif', dirname (__FILE__ ) ) ?>" />
+								<?php
+								}
+								echo '<br/><a href="https://blog.nintechnet.com/how-to-get-informed-about-the-latest-security-updates-in-your-wordpress-plugins-and-themes/" target="_blank">' .
+								esc_html__('More info about this warning', 'ninjafirewall') .'</a>';
+								?>
+							</div>
+						</td>
+					</tr>
+					<?php
+					}
+				);
+
 			} else {
 				// Remove if from our cache
 				unset( $nfw_checked['plugins'][$k] );
 				$cleared = 1;
 			}
-
 		}
 	}
 
@@ -1674,19 +1701,6 @@ function nfw_verify_secupdates() {
 	if (! empty( $cleared ) ) {
 		nfw_update_option('nfw_checked', $nfw_checked );
 	}
-}
-
-function nfw_in_plugin_update_message( $plugin_data, $r ) {
-
-	// We need to add our style here because ninjafirewall.css
-	// is not loaded on the plugins page:
-	echo '<br /><br /><span style="display:block;background-color:#FFA4A4;color:#000;padding:5px;border:1px solid red">';
-
-	echo esc_html__('Important: NinjaFirewall has detected that this is a security update.', 'ninjafirewall') . ' ' .
-	esc_html__("Don't leave your blog at risk, make sure to update as soon as possible.", 'ninjafirewall')  . ' ' .
-	'<a href="https://blog.nintechnet.com/how-to-get-informed-about-the-latest-security-updates-in-your-wordpress-plugins-and-themes/" target="_blank">' .
-	esc_html__('More info about this warning.', 'ninjafirewall') .
-	'</a></span>';
 }
 
 // ---------------------------------------------------------------------

@@ -3,7 +3,7 @@ Contributors: nintechnet, bruandet
 Tags: security, firewall, malware, virus, protection
 Requires at least: 4.9
 Tested up to: 7.0
-Stable tag: 4.8.7
+Stable tag: 4.8.8
 Requires PHP: 7.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -208,6 +208,11 @@ WordPress Sicherheit Plugin.
 == Changelog ==
 
 Need more security? Take the time to explore our supercharged Premium edition: [NinjaFirewall WP+ Edition](https://nintechnet.com/ninjafirewall/wp-edition/#features)
+
+= 4.8.8 =
+
+* Because WordPress.org enforces a mandatory 24-hour update delay on all new plugin releases, as soon as a new security updates is available for a plugin, NinjaFirewall will allow you to update it immediately from the "Plugins" page.
+* Small fixes and adjustments.
 
 = 4.8.7 =
 

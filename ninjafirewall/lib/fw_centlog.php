@@ -41,7 +41,7 @@ function fw_centlog() {
 		}
 	}
 
-	if ( empty( $pubkey[0] ) || sha1( $_POST['clogs_req'] ) !== $pubkey[0] ) {
+	if ( empty( $pubkey[0] ) || ! hash_equals( $pubkey[0], sha1( $_POST['clogs_req'] ) ) ) {
 
 		NinjaFirewall_log::write(
 			'Centralized logging: public key rejected',

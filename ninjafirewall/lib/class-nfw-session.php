@@ -93,7 +93,26 @@ class NinjaFirewall_session {
 		/**
 		 * Set the cookie.
 		 */
-		setcookie( self::$SESSION_NAME, self::$session_id, 0, '/', '', self::is_ssl(), true );
+		if ( version_compare( PHP_VERSION, '7.3.0', '<') ) {
+			setcookie(
+				self::$SESSION_NAME,
+				self::$session_id,
+				0,
+				'/',
+				'',
+				self::is_ssl(),
+				true
+			);
+
+		} else {
+			setcookie( self::$SESSION_NAME, self::$session_id, [
+				'expires'	=> 0,
+				'path'		=> '/',
+				'domain'		=> '',
+				'secure'		=> self::is_ssl(),
+				'httponly'	=> true
+			] );
+		}
 		return true;
 	}
 

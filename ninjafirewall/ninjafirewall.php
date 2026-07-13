@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP Edition)
 Plugin URI: https://nintechnet.com/
 Description: A true Web Application Firewall to protect and secure WordPress.
-Version: 4.8.7
+Version: 4.8.8
 Author: The Ninja Technologies Network
 Author URI: https://nintechnet.com/
 License: GPLv3 or later
@@ -11,7 +11,7 @@ Network: true
 Text Domain: ninjafirewall
 Domain Path: /languages
 */
-define('NFW_ENGINE_VERSION', '4.8.7');
+define('NFW_ENGINE_VERSION', '4.8.8');
 /*
  +=====================================================================+
  |    _   _ _        _       _____ _                        _ _        |
@@ -284,9 +284,14 @@ function nfw_load_ext( $hook ) {
 	// Load the external JS script and CSS:
 	// -Single site: to the admin only.
 	// -Multi-site: to the superadmin and from the main network admin screen only.
-	// -All: only if this is a NinjaFirewall menu page
-	if (! current_user_can('activate_plugins') || ! is_main_site() ) { return; }
-	if ( stripos( $hook, 'ninjafirewall' ) === false ) { return; }
+	// -All: only if this is a NinjaFirewall menu page, or the Plugins page
+	if (! current_user_can('activate_plugins') || ! is_main_site() ) {
+		return;
+	}
+
+	if ( stripos( $hook, 'ninjafirewall' ) === false && $hook != 'plugins.php') {
+		return;
+	}
 
 	if ( strpos ( $hook, 'nfsubwplus' ) !== false ) {
 		// Load thickbox JS and CSS (WP only for "WP+" menu page's screenshots)
@@ -385,6 +390,12 @@ function nfw_load_ext( $hook ) {
 		// Firewall Log
 		'invalid_key' =>
 			__('Your public key is not valid.', 'ninjafirewall'),
+
+		// Events notification
+		'missing_parameters' =>
+			__('Missing parameters.', 'ninjafirewall'),
+		'unknown_error' =>
+			__('Unknown error.', 'ninjafirewall'),
 
 		// Live Log
 		'live_log_desc' =>
@@ -657,6 +668,12 @@ function nfw_logout_hook() {
 }
 
 add_action( 'wp_logout', 'nfw_logout_hook' );
+
+// =====================================================================
+// Plugin ugrade AJAX function.
+
+require __DIR__ .'/lib/class-plugin-upgrade.php';
+add_action('wp_ajax_nfw_pluginupgrade', ['NinjaFirewall_plugin', 'upgrade'] );
 
 /* ------------------------------------------------------------------ */
 // FullWAF upgrade AJAX function.
@@ -1162,7 +1179,7 @@ if ( is_multisite() ) {
 
 /* ------------------------------------------------------------------ */
 
-function nf_not_allowed($block, $line = 0) {
+function nf_not_allowed( $block, $line = 0, $ajax = 0 ) {
 
 	if ( is_multisite() ) {
 		if ( current_user_can('manage_network') && is_main_site() ) {
@@ -1196,6 +1213,13 @@ function nf_not_allowed($block, $line = 0) {
 					"NinjaFirewall: $line"
 				)
 			);
+		} elseif ( $ajax ) {
+			$message = sprintf(
+				esc_html__('You are not allowed to perform this task (%s).', 'ninjafirewall'),
+					"NinjaFirewall: $line"
+			);
+			wp_send_json( ['error' => $message ] );
+
 		} else {
 			die( '<br /><br /><br /><div class="error notice is-dismissible"><p>' .
 				sprintf(
