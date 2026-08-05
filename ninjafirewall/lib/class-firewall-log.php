@@ -155,7 +155,7 @@ class NinjaFirewall_log {
 
 		/**
 		 * `nfw_custom_user_log()` can be defined in the .htninja configuration file
-		 * to allow the user to retreive the log line.
+		 * to allow the user to retrieve the log line.
 		 */
 		if ( function_exists('nfw_custom_user_log') ) {
 			nfw_custom_user_log( $log_line );

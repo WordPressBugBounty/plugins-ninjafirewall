@@ -65,7 +65,6 @@ __('Unable to access/read the shared memory block. Try to reload this page or, i
 __('Firewall is disabled', 'ninjafirewall');
 __('Shared memory', 'ninjafirewall');
 __('You are not whitelisted. Ensure that the "Do not block the following users" option in the <a href="%s">Access Control menu</a> includes the Admin/Super Admin, otherwise you could get blocked by the firewall while working from the WordPress administration dashboard.', 'ninjafirewall');
-__('You are using PHP sessions. If you want to switch to NinjaFirewall sessions, please delete the following file: %s.', 'ninjafirewall');
 __('<a href="%s">Access Control Source IP</a> is setup to use %s, however your server does not support that variable. All IP-based directives will fail.', 'ninjafirewall');
 __('You have a private IP: %s', 'ninjafirewall');
 __('If your site is behind a reverse proxy or a load balancer, ensure that the <a href="%s">Source IP</a> is setup accordingly.', 'ninjafirewall');

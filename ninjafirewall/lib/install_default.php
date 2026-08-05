@@ -48,7 +48,6 @@ function nfw_load_default_conf() {
 		'sanitise_fn'		=> 0,
 		'get_sanitise'		=> 0,
 		'post_scan'			=> 1,
-		'post_sanitise'	=> 0,
 		'cookies_scan'		=> 1,
 		'cookies_sanitise'=> 0,
 		'ua_scan'			=> 1,
@@ -136,8 +135,6 @@ function nfw_load_default_conf() {
 		'enum_feed'			=> 0,
 		'no_restapi'		=> 0,
 		'restapi_loggedin'=> 0,
-		// v1.1.6 :
-		'request_sanitise'=> 0,
 		// v1.2.1 :
 		'fg_enable'			=>	0,
 		'fg_mtime'			=>	10,

@@ -114,7 +114,7 @@ nfw_contextual_help();
 	<h3><?php _e('Security updates', 'ninjafirewall') ?></h3>
 	<table class="form-table nfw-table">
 		<tr>
-			<th scope="row" class="row-med"><?php _e('Send me an alert whenever', 'ninjafirewall') ?></th>
+			<th scope="row" class="row-med"><?php _e('Send me an alert whenever', 'ninjafirewall') ?> <span class="ninjafirewall-tip" data-tip="<?php esc_attr_e('In the Premium version of NinjaFirewall, security updates are checked every hour, as opposed to three times a day in this free version.', 'ninjafirewall' ) ?>"></span></th>
 			<td>
 				<p><label><input type="checkbox" name="nfw_options[secupdates]" value="1"<?php checked( $nfw_options['secupdates'], 1) ?>>&nbsp;<?php _e('An important security update is available for a plugin, theme or WordPress (default)', 'ninjafirewall') ?></label></p>
 				<p><span class="description"><a href="https://blog.nintechnet.com/how-to-get-informed-about-the-latest-security-updates-in-your-wordpress-plugins-and-themes/" target="_blank"><?php esc_html_e('Consult our blog for more info.', 'ninjafirewall') ?></a>

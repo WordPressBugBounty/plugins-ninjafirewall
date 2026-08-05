@@ -580,11 +580,6 @@ wp_nonce_field('policies_save', 'nfwnonce', 0);
 	} else {
 		$post_scan = 1;
 	}
-	if ( empty( $nfw_options['post_sanitise']) ) {
-		$post_sanitise = 0;
-	} else {
-		$post_sanitise = 1;
-	}
 	if ( empty( $nfw_options['post_b64']) ) {
 		$post_b64 = 0;
 	} else {
@@ -600,35 +595,9 @@ wp_nonce_field('policies_save', 'nfwnonce', 0);
 			</td>
 		</tr>
 		<tr valign="top">
-			<th scope="row" class="row-med"><?php _e('Sanitise <code>POST</code> variable', 'ninjafirewall') ?></th>
-			<td>
-				<?php nfw_toggle_switch( 'warning', 'nfw_options[post_sanitise]', $yes, $no, 'small', $post_sanitise ) ?>
-				<p class="description">&nbsp;<?php _e('Do not enable this option unless you know what you are doing!', 'ninjafirewall') ?></p>
-			</td>
-		</tr>
-		<tr valign="top">
 			<th scope="row" class="row-med"><?php _e('Decode Base64-encoded <code>POST</code> variable', 'ninjafirewall') ?></th>
 			<td>
 				<?php nfw_toggle_switch( 'info', 'nfw_options[post_b64]', $yes, $no, 'small', $post_b64 ) ?>
-			</td>
-		</tr>
-	</table>
-	<br /><br />
-
-	<?php
-	if ( empty( $nfw_options['request_sanitise']) ) {
-		$request_sanitise = 0;
-	} else {
-		$request_sanitise = 1;
-	}
-	?>
-	<h3><?php _e('HTTP REQUEST variable', 'ninjafirewall') ?></h3>
-	<table class="form-table nfw-table">
-		<tr>
-			<th scope="row" class="row-med"><?php _e('Sanitise <code>REQUEST</code> variable', 'ninjafirewall') ?></th>
-			<td>
-				<?php nfw_toggle_switch( 'warning', 'nfw_options[request_sanitise]', $yes, $no, 'small', $request_sanitise ) ?>
-				<p class="description">&nbsp;<?php _e('Do not enable this option unless you know what you are doing!', 'ninjafirewall') ?></p>
 			</td>
 		</tr>
 	</table>
@@ -1257,22 +1226,10 @@ function nf_sub_policies_save() {
 	} else {
 		$nfw_options['post_scan'] = 1;
 	}
-	if ( empty( $_POST['nfw_options']['post_sanitise']) ) {
-		$nfw_options['post_sanitise'] = 0;
-	} else {
-		$nfw_options['post_sanitise'] = 1;
-	}
 	if ( empty( $_POST['nfw_options']['post_b64']) ) {
 		$nfw_options['post_b64'] = 0;
 	} else {
 		$nfw_options['post_b64'] = 1;
-	}
-
-
-	if ( empty( $_POST['nfw_options']['request_sanitise']) ) {
-		$nfw_options['request_sanitise'] = 0;
-	} else {
-		$nfw_options['request_sanitise'] = 1;
 	}
 
 
@@ -1631,21 +1588,18 @@ function nf_sub_policies_save() {
 		$nfw_options['disallow_mods'] = 1;
 	}
 
-
-	if ( empty( $_POST['nfw_options']['wl_admin']) ) {
+	if ( empty( $_POST['nfw_options']['wl_admin'] ) ) {
 		$nfw_options['wl_admin'] = 0;
-		if ( isset( $_SESSION['nfw_goodguy']) ) {
-			unset( $_SESSION['nfw_goodguy']);
-		}
+		NinjaFirewall_session::delete('nfw_goodguy');
+
 	} else {
 		if ( $_POST['nfw_options']['wl_admin'] == 2 ) {
 			$nfw_options['wl_admin'] = 2;
 		} else {
 			$nfw_options['wl_admin'] = 1;
 		}
-		$_SESSION['nfw_goodguy'] = $nfw_options['wl_admin'];
+		NinjaFirewall_session::write( ['nfw_goodguy' => true ] );
 	}
-
 
 	if ( empty( $_POST['nfw_rules']['block_null_byte']) ) {
 		$nfw_rules[NFW_NULL_BYTE]['ena'] = 0;
@@ -1741,8 +1695,6 @@ function nf_sub_policies_default() {
 	$nfw_options['get_scan']			= 1;
 	$nfw_options['get_sanitise']		= 0;
 	$nfw_options['post_scan']			= 1;
-	$nfw_options['post_sanitise']		= 0;
-	$nfw_options['request_sanitise'] = 0;
 	if ( function_exists('header_register_callback') && function_exists('headers_list') && function_exists('header_remove') ) {
 		$nfw_options['response_headers'] = '0003000000';
 		$nfw_options['referrer_policy_enabled'] = 0;
@@ -1793,7 +1745,8 @@ function nf_sub_policies_default() {
 	$nfw_options['disallow_mods'] 	= 0;
 	$nfw_options['post_b64']			= 1;
 	$nfw_options['wl_admin']			= 1;
-	$_SESSION['nfw_goodguy'] 			= true;
+
+	NinjaFirewall_session::write( ['nfw_goodguy' => true ] );
 
 	$nfw_rules[NFW_SCAN_BOTS]['ena']	= 1;
 	$nfw_rules[NFW_LOOPBACK]['ena']	= 1;

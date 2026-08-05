@@ -17,11 +17,13 @@ if ( class_exists('NinjaFirewall_plugin') ) {
 
 class NinjaFirewall_plugin {
 
-	private static $url     = 'https://downloads.wordpress.org/plugin/%s.%s.zip';
-	private static $slug    = '';
-	private static $main    = '';
-	private static $network = false;
-	private static $active  = false;
+	private static $url     			= 'https://downloads.wordpress.org/plugin/%s.%s.zip';
+	private static $slug    			= '';
+	private static $main    			= '';
+	private static $network 			= false;
+	private static $active  			= false;
+
+	private static $main_site_only	= true;
 
 
 	/**
@@ -48,6 +50,13 @@ class NinjaFirewall_plugin {
 	 * `nfw_pluginupgrade` AJAX action.
 	 */
 	public static function upgrade() {
+		/**
+		 * The superadmin must run the update from the main site only to avoid errors.
+		 */
+		if ( self::$main_site_only && ! is_main_site() ) {
+			$error = esc_html__('Connect to the main site and try again.', 'ninjafirewall');
+			wp_send_json( ['status' => 'error', 'message' => $error ] );
+		}
 
 		global $wp_filesystem;
 

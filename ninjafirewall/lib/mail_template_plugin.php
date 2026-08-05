@@ -146,6 +146,8 @@ Blog: %1$s
 Rules version: %2$s
 Date: %3$s
 
+Did you know NinjaFirewall can update its security rules as often as every 15 minutes in the Premium version, as opposed to hourly in this free version? Explore NinjaFirewall WP+ Premium: https://nintechnet.com/ninjafirewall/wp-edition/
+
 This notification can be turned off from NinjaFirewall "Security Rules" page.', 'ninjafirewall');
 
 
@@ -359,6 +361,8 @@ Blog: %2$s
 %3$s
 
 Don\'t leave your blog at risk, make sure to update as soon as possible.
+
+Did you know security updates available for your site are checked every hour in the Premium version of NinjaFirewall, as opposed to only three times a day in this free version? Explore NinjaFirewall WP+ Premium: https://nintechnet.com/ninjafirewall/wp-edition/
 
 This notification can be turned off from NinjaFirewall "Event Notifications" page.
 ',

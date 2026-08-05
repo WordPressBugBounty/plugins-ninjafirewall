@@ -226,13 +226,10 @@ function help_nfsubpolicies() {
 		__('Whether to scan and/or sanitise the <code>GET</code> variable.', 'ninjafirewall').
 
 		'<h3>' . __('HTTP POST variable', 'ninjafirewall'). '</h3>'.
-		__('Whether to scan and/or sanitise the <code>POST</code> variable.', 'ninjafirewall').
+		__('Whether to scan the <code>POST</code> variable.', 'ninjafirewall').
 		'<p><strong>' . __('Decode Base64-encoded <code>POST</code> variable', 'ninjafirewall'). '</strong><br />' . __('NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for the <code>POST</code> variable.', 'ninjafirewall'). '</p>
 
-		<h3>' . __('HTTP REQUEST variable', 'ninjafirewall'). '</h3>'.
-		__('Whether to sanitise the <code>REQUEST</code> variable.', 'ninjafirewall').
-
-		'<h3>' . __('Cookies', 'ninjafirewall'). '</h3>'.
+		<h3>' . __('Cookies', 'ninjafirewall'). '</h3>'.
 		__('Whether to scan and/or sanitise cookies.', 'ninjafirewall').
 
 		'<h3>' . __('HTTP_USER_AGENT server variable', 'ninjafirewall'). '</h3>'.

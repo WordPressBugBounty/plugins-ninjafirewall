@@ -119,7 +119,7 @@ foreach ( $enabled_rules as $key ) {
 	echo '<option value="' . htmlspecialchars($key) . '">' . __('Rule ID', 'ninjafirewall') .' : ' . htmlspecialchars($key) . $desc . '</option>';
 	++$count;
 }
-echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="' . __('Disable it', 'ninjafirewall') .'"' . disabled( $count, 0) .'>
+echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" style="color:#ba0000;border-color:#ba0000;" name="disable" value="' . __('Disable it', 'ninjafirewall') .'"' . disabled( $count, 0) .'>
 			<input type="hidden" name="tab" value="editor" />
 		</form>
 		<br />

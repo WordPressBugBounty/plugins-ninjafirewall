@@ -215,7 +215,7 @@ if (! empty( $_POST['delete-error-log'] ) ){
 					?>
 						<tr>
 							<th scope="row" class="row-med"><?php _e('Debugging mode', 'ninjafirewall') ?></th>
-							<td><span class="dashicons dashicons-dismiss nfw-danger"></span><?php _e('Enabled.', 'ninjafirewall') ?>&nbsp;<a href="?page=nfsubopt"><?php _e('Click here to turn Debugging Mode off', 'ninjafirewall') ?></a></td>
+							<td><span class="dashicons dashicons-warning nfw-warning"></span><?php _e('Enabled.', 'ninjafirewall') ?>&nbsp;<a href="?page=nfsubopt"><?php _e('Click here to turn Debugging Mode off', 'ninjafirewall') ?></a></td>
 						</tr>
 					<?php
 					}
@@ -258,7 +258,7 @@ if (! empty( $_POST['delete-error-log'] ) ){
 						?>
 						<tr>
 							<th scope="row" class="row-med"><?php _e('Admin user', 'ninjafirewall') ?></th>
-							<td><span class="dashicons dashicons-warning nfw-warning"></span><?php printf( __('You are not whitelisted. Ensure that the "Do not block WordPress administrator" option is enabled in the <a href="%s">Firewall Policies</a> menu, otherwise you could get blocked by the firewall while working from your administration dashboard.', 'ninjafirewall'), '?page=nfsubpolicies') ?></td>
+							<td><span class="dashicons dashicons-dismiss nfw-danger"></span><?php printf( __('You are not whitelisted. Ensure that the "Do not block WordPress administrator" option is enabled in the <a href="%s">Firewall Policies</a> menu, otherwise you could get blocked by the firewall while working from your administration dashboard.', 'ninjafirewall'), '?page=nfsubpolicies') ?></td>
 						</tr>
 					<?php
 					} else {
@@ -289,24 +289,6 @@ if (! empty( $_POST['delete-error-log'] ) ){
 							<td><span class="dashicons dashicons-warning nfw-warning"></span><?php esc_html_e('It seems that the user session set by NinjaFirewall was not found by the firewall script.', 'ninjafirewall') ?></td>
 						</tr>
 						<?php
-					} else {
-						/**
-						 * Don't display info about the session if we're using the NinjaFirewall's built-in session.
-						 */
-						if ( is_file( NFW_LOG_DIR .'/nfwlog/phpsession') ) {
-							?>
-							<tr>
-								<th scope="row" class="row-med"><?php esc_html_e('User session', 'ninjafirewall') ?></th>
-								<td><?php
-									printf(
-							/* Translators: path to the file */
-							esc_html__('You are using PHP sessions. If you want to switch to NinjaFirewall sessions, please delete the following file: %s.', 'nfwplus'),
-								'<code>'. esc_html( NFW_LOG_DIR .'/nfwlog/phpsession') .'</code>'
-						); ?>
-								</td>
-							</tr>
-						<?php
-						}
 					}
 
 					if ( ! empty( $nfw_options['clogs_pubkey'] ) ) {
@@ -400,7 +382,7 @@ if (! empty( $_POST['delete-error-log'] ) ){
 								?>
 								<tr>
 									<th scope="row" class="row-med">PHP INI</th>
-									<td><span class="dashicons dashicons-dismiss nfw-danger"></span><?php printf( esc_html__('The php.ini file is readable by web users: %s', 'ninjafirewall'), '<code>'. htmlspecialchars( $res ) .'</code>' ) ?> <br /><a href="https://blog.nintechnet.com/protecting-ninjafirewalls-php-ini-file/" target="_blank"><?php esc_html_e('Consult our blog for more info.', 'ninjafirewall') ?></a></td>
+									<td><span class="dashicons dashicons-warning nfw-warning"></span><?php printf( esc_html__('The php.ini file is readable by web users: %s', 'ninjafirewall'), '<code>'. htmlspecialchars( $res ) .'</code>' ) ?> <br /><a href="https://blog.nintechnet.com/protecting-ninjafirewalls-php-ini-file/" target="_blank"><?php esc_html_e('Consult our blog for more info.', 'ninjafirewall') ?></a></td>
 								</tr>
 								<?php
 							}
@@ -411,7 +393,7 @@ if (! empty( $_POST['delete-error-log'] ) ){
 								?>
 								<tr>
 									<th scope="row" class="row-med">PHP INI</th>
-									<td><span class="dashicons dashicons-dismiss nfw-danger"></span><?php printf( esc_html__('The .user.ini file is readable by web users:  %s', 'ninjafirewall'), '<code>'. htmlspecialchars( $res ) .'</code>' ) ?><br /><a href="https://blog.nintechnet.com/protecting-ninjafirewalls-php-ini-file/" target="_blank"><?php esc_html_e('Consult our blog for more info.', 'ninjafirewall') ?></a></td>
+									<td><span class="dashicons dashicons-warning nfw-warning"></span><?php printf( esc_html__('The .user.ini file is readable by web users:  %s', 'ninjafirewall'), '<code>'. htmlspecialchars( $res ) .'</code>' ) ?><br /><a href="https://blog.nintechnet.com/protecting-ninjafirewalls-php-ini-file/" target="_blank"><?php esc_html_e('Consult our blog for more info.', 'ninjafirewall') ?></a></td>
 								</tr>
 								<?php
 							}
@@ -427,7 +409,7 @@ if (! empty( $_POST['delete-error-log'] ) ){
 							?>
 							<tr id="error-log-alert">
 								<th scope="row" class="row-med"><?php _e('Error log', 'ninjafirewall') ?></th>
-								<td><span class="dashicons dashicons-dismiss nfw-danger"></span><input type="button" id="nfw-errorlog-thickbox" value="<?php _e('View error log', 'ninjafirewall') ?>" class="button-secondary"></td>
+								<td><input type="button" id="nfw-errorlog-thickbox" value="<?php _e('View error log', 'ninjafirewall') ?>" class="button-secondary" style="color:#ba0000;border-color:#ba0000;"></td>
 							</tr>
 							<?php
 						}

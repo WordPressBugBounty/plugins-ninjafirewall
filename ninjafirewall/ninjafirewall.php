@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP Edition)
 Plugin URI: https://nintechnet.com/
 Description: A true Web Application Firewall to protect and secure WordPress.
-Version: 4.8.8
+Version: 4.9
 Author: The Ninja Technologies Network
 Author URI: https://nintechnet.com/
 License: GPLv3 or later
@@ -11,7 +11,7 @@ Network: true
 Text Domain: ninjafirewall
 Domain Path: /languages
 */
-define('NFW_ENGINE_VERSION', '4.8.8');
+define('NFW_ENGINE_VERSION', '4.9');
 /*
  +=====================================================================+
  |    _   _ _        _       _____ _                        _ _        |
@@ -59,19 +59,16 @@ if (! empty( $_SERVER['DOCUMENT_ROOT'] ) && $_SERVER['DOCUMENT_ROOT'] != '/') {
 /* ------------------------------------------------------------------ */
 
 /**
- * Select whether we want to use PHP or NF (default since v4.8.1) sessions.
+ * Start a session.
  */
-if ( is_file( NFW_LOG_DIR .'/nfwlog/phpsession') ) {
-	require_once __DIR__ .'/lib/class-php-session.php';
-} else {
-	if (! defined('NFWSESSION_DIR') ) {
-		/**
-		 * NFWSESSION_DIR can be defined in the .htninja.
-		 */
-		define('NFWSESSION_DIR', NFW_LOG_DIR .'/nfwlog/session');
-	}
-	require_once __DIR__ .'/lib/class-nfw-session.php';
+if (! defined('NFWSESSION_DIR') ) {
+	/**
+	 * NFWSESSION_DIR can be defined in the .htninja.
+	 */
+	define('NFWSESSION_DIR', NFW_LOG_DIR .'/nfwlog/session');
 }
+require_once __DIR__ .'/lib/class-session.php';
+
 
 if (! defined( 'NFW_REMOTE_ADDR') ) {
 	/**
@@ -448,7 +445,9 @@ function nfw_admin_init() {
 	// Anything below requires admin authentication
 	// --------------------------------------------
 
-	if ( nf_not_allowed(0, __LINE__) ) { return; }
+	if ( nf_not_allowed( 0, __LINE__ ) ) {
+		return;
+	}
 
 	// Create our unique PID
 	$nfw_pid = NFW_LOG_DIR .'/nfwlog/cache/.pid';
@@ -461,10 +460,13 @@ function nfw_admin_init() {
 		nfw_enable_wpwaf();
 	}
 
-	// Security update in WP plugins:
+	/**
+	 * WordPress, plugins and themes security updates.
+	 */
 	global $pagenow;
-	if ( $pagenow == 'plugins.php' && current_user_can( 'update_plugins' ) ) {
-		nfw_verify_secupdates();
+	if ( $pagenow == 'plugins.php' && current_user_can('update_plugins') ) {
+		require_once __DIR__ .'/lib/class-security-updates.php';
+		NinjaFirewall_security_updates::display();
 	}
 
 	/**

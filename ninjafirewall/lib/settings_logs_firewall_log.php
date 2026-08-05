@@ -212,7 +212,7 @@ if ( empty( $nfw_options['auto_del_log'] ) ) {
 	<br />
 
 	<a name="clogs"></a>
-	<h3><?php _e('Centralized Logging', 'ninjafirewall') ?></h3>
+	<h3><?php _e('Centralized Logging', 'ninjafirewall') ?> <span class="ninjafirewall-tip" data-tip="<?php esc_attr_e('In the Premium version of NinjaFirewall, Centralised Logging lets you remotely access the firewall log of all your NinjaFirewall protected websites from one single installation.', 'ninjafirewall' ) ?>"></span></h3>
 	<table class="form-table nfw-table">
 		<tr>
 			<th scope="row" class="row-med"><?php _e('Enter your public key (optional)', 'ninjafirewall') ?></th>
@@ -227,7 +227,7 @@ if ( empty( $nfw_options['auto_del_log'] ) ) {
 	<input type="hidden" name="nfw_act" value="pubkey" />
 	<input class="button-primary" name="save_pubkey" value="<?php _e('Save Public Key', 'ninjafirewall') ?>" type="submit" />
 	&nbsp;&nbsp;&nbsp;&nbsp;
-	<input class="button-secondary" name="delete_pubkey" value="<?php _e('Delete Public Key', 'ninjafirewall') ?>" type="submit"<?php disabled($nfw_options['clogs_pubkey'], '' ) ?> />
+	<input class="button-secondary" style="color:#ba0000;border-color:#ba0000;" name="delete_pubkey" value="<?php _e('Delete Public Key', 'ninjafirewall') ?>" type="submit"<?php disabled($nfw_options['clogs_pubkey'], '' ) ?> />
 	<input type="hidden" name="tab" value="firewalllog" />
 
 </form>

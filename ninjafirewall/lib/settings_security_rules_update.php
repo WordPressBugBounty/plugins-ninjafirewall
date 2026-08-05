@@ -248,9 +248,9 @@ if ( empty($nfw_options['notify_updates']) && isset($nfw_options['notify_updates
 		<input name="check_updates" type="submit" class="button-secondary" value="<?php _e('Check For Updates Now!', 'ninjafirewall') ?>" />&nbsp;&nbsp;&nbsp;&nbsp;
 		<?php
 		if ( empty( $enable_updates ) || ! file_exists( $update_log ) ) {
-			$style = ' style="display:none"';
+			$style = ' style="display:none;"';
 		} else {
-			$style = '';
+			$style = ' style="color:#ba0000;border-color:#ba0000;"';
 		}
 		?>
 		<input name="clear_log" type="submit" value="<?php _e('Delete Log', 'ninjafirewall') ?>" class="button-secondary"<?php echo $style ?> />

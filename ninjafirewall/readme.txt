@@ -3,7 +3,7 @@ Contributors: nintechnet, bruandet
 Tags: security, firewall, malware, virus, protection
 Requires at least: 4.9
 Tested up to: 7.0
-Stable tag: 4.8.8
+Stable tag: 4.9
 Requires PHP: 7.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -208,6 +208,16 @@ WordPress Sicherheit Plugin.
 == Changelog ==
 
 Need more security? Take the time to explore our supercharged Premium edition: [NinjaFirewall WP+ Edition](https://nintechnet.com/ninjafirewall/wp-edition/#features)
+
+= 4.9 =
+
+* Improved the security updates notification.
+* WP+ Edition (Premium): Fixed a bug where the dashboard may not always show a warning if the admin is not whitelisted.
+* The "Sanitise POST variable" and "Sanitise REQUEST variable" policies were removed.
+* Some little modifications to the UI of the plugin.
+* It is no longer possible to configure NinjaFirewall to use PHP sessions; If your site was using such configuration, it will automatically switch to NinjaFirewall sessions instead, which were introduced several months ago and are a much better option.
+* WP+ Edition (Premium): Updated IP location databases.
+* Many small fixes and adjustments.
 
 = 4.8.8 =
 
