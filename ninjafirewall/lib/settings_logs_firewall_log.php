@@ -204,7 +204,7 @@ if ( empty( $nfw_options['auto_del_log'] ) ) {
 	<?php
 
 	wp_nonce_field('settings_log', 'nfwnonce', 0);
-	if ( empty( $nfw_options['clogs_pubkey'] ) || ! preg_match( '/^[a-f0-9]{40}:(?:[a-f0-9:.]{3,39}|\*)$/', $nfw_options['clogs_pubkey'] ) ) {
+	if ( empty( $nfw_options['clogs_pubkey'] ) || ! preg_match( '/^[a-f0-9]{40,64}:(?:[a-f0-9:.]{3,39}|\*)$/', $nfw_options['clogs_pubkey'] ) ) {
 		$nfw_options['clogs_pubkey'] = '';
 	}
 
@@ -285,7 +285,7 @@ function nf_sub_log_find_local( $log_dir ) {
 function nf_sub_log_save_pubkey( $nfw_options ) {
 
 	if ( empty( $_POST['nfw_options']['clogs_pubkey'] ) ||
-		! preg_match( '/^[a-f0-9]{40}:(?:[a-f0-9:.]{3,39}|\*)$/', $_POST['nfw_options']['clogs_pubkey'] ) ) {
+		! preg_match( '/^[a-f0-9]{40,64}:(?:[a-f0-9:.]{3,39}|\*)$/', $_POST['nfw_options']['clogs_pubkey'] ) ) {
 		$nfw_options['clogs_pubkey'] = '';
 	} else {
 		$nfw_options['clogs_pubkey'] = $_POST['nfw_options']['clogs_pubkey'];

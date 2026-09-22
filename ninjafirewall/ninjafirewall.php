@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP Edition)
 Plugin URI: https://nintechnet.com/
 Description: A true Web Application Firewall to protect and secure WordPress.
-Version: 4.9
+Version: 4.9.1
 Author: The Ninja Technologies Network
 Author URI: https://nintechnet.com/
 License: GPLv3 or later
@@ -11,7 +11,7 @@ Network: true
 Text Domain: ninjafirewall
 Domain Path: /languages
 */
-define('NFW_ENGINE_VERSION', '4.9');
+define('NFW_ENGINE_VERSION', '4.9.1');
 /*
  +=====================================================================+
  |    _   _ _        _       _____ _                        _ _        |
@@ -91,6 +91,7 @@ if ( ! defined('NFWLOG_DEBUG') ) {
 	define('NFWLOG_DEBUG', 7);
 }
 require_once __DIR__ .'/lib/class-firewall-log.php';
+require_once __DIR__ .'/lib/class-firewall-bruteforce.php';
 require_once __DIR__ . '/lib/class-helpers.php';
 require_once __DIR__ .'/lib/class_mail.php';
 
@@ -198,10 +199,11 @@ function nfw_activate() {
 	// Create scheduled tasks.
 	nfw_create_scheduled_tasks();
 
-	// Re-enable brute-force protection
-	if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf_off.php' ) ) {
-		rename(NFW_LOG_DIR . '/nfwlog/cache/bf_conf_off.php', NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php');
-	}
+	/**
+	 * Re-enable brute-force protection.
+	 */
+	NinjaFirewall_bruteforce::enable( NFW_LOG_DIR .'/nfwlog/cache');
+
 }
 
 register_activation_hook( __FILE__, 'nfw_activate' );
@@ -258,9 +260,7 @@ function nfw_deactivate() {
 	/**
 	 * Disable brute-force protection.
 	 */
-	if ( file_exists( NFW_LOG_DIR .'/nfwlog/cache/bf_conf.php') ) {
-		rename(NFW_LOG_DIR .'/nfwlog/cache/bf_conf.php', NFW_LOG_DIR .'/nfwlog/cache/bf_conf_off.php');
-	}
+	NinjaFirewall_bruteforce::disable( NFW_LOG_DIR .'/nfwlog/cache');
 
 	nfw_update_option('nfw_options', $nfw_options);
 
@@ -383,6 +383,8 @@ function nfw_load_ext( $hook ) {
 			__('Select when to enable the login protection.', 'ninjafirewall'),
 		'missing_auth' =>
 			__('Enter a name and a password for the HTTP authentication.', 'ninjafirewall'),
+		'short_authpswd' =>
+			__('Error: the password length must be from 8 to 255 characters.', 'ninjafirewall'),
 
 		// Firewall Log
 		'invalid_key' =>
@@ -1191,7 +1193,7 @@ function nf_not_allowed( $block, $line = 0, $ajax = 0 ) {
 		if ( current_user_can('manage_options') &&
 		     current_user_can('unfiltered_html') ) {
 			// Check if that admin is allowed to use NinjaFirewall
-			// (see NFW_ALLOWED_ADMIN at http://nin.link/nfwaa ):
+			// (see NFW_ALLOWED_ADMIN at https://nin.link/nfwaa ):
 			if ( defined('NFW_ALLOWED_ADMIN') ) {
 				$current_user = wp_get_current_user();
 				$admins = explode(',', NFW_ALLOWED_ADMIN );

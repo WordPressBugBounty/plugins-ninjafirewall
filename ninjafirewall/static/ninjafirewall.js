@@ -562,7 +562,7 @@ function ac_radio_toogle( on_off, rbutton ) {
 }
 
 
-function nfwjs_upgrade_plugin( plugin, version, nonce ) {
+function nfwjs_upgrade_plugin( plugin, version, nonce, count ) {
 
 	if ( typeof plugin === 'undefined' || typeof version === 'undefined' ||
 		typeof nonce === 'undefined') {
@@ -570,7 +570,7 @@ function nfwjs_upgrade_plugin( plugin, version, nonce ) {
 		alert( nfwi18n.missing_parameters );
 		return false;
 	}
-	nfwjs_upgrade_plugin_progress( 0 );
+	nfwjs_upgrade_plugin_progress( 0, count );
 
 	var data = {
 		'action': 'nfw_pluginupgrade',
@@ -588,13 +588,13 @@ function nfwjs_upgrade_plugin( plugin, version, nonce ) {
 
 			if (typeof response === 'undefined') {
 				alert( nfwi18n.unknown_error );
-				nfwjs_upgrade_plugin_progress( 1 );
+				nfwjs_upgrade_plugin_progress( 1, count );
 				return false;
 			}
 
 			if ( response.status == 'error') {
 				alert( response.message );
-				nfwjs_upgrade_plugin_progress( 1 );
+				nfwjs_upgrade_plugin_progress( 1, count );
 
 			} else if ( response.status == 'success') {
 				alert( response.message );
@@ -602,14 +602,14 @@ function nfwjs_upgrade_plugin( plugin, version, nonce ) {
 
 			} else {
 				alert( nfwi18n.unknown_error );
-				nfwjs_upgrade_plugin_progress( 1 );
+				nfwjs_upgrade_plugin_progress( 1, count );
 			}
 			return false;
 		},
 
 		error: function(xhr, status, error) {
 			alert('Error: ' + error );
-			nfwjs_upgrade_plugin_progress( 1 );
+			nfwjs_upgrade_plugin_progress( 1, count );
 			return false;
 		},
 	} );
@@ -617,14 +617,14 @@ function nfwjs_upgrade_plugin( plugin, version, nonce ) {
 	return false;
 }
 
-function nfwjs_upgrade_plugin_progress( show ) {
+function nfwjs_upgrade_plugin_progress( show, count ) {
 
 	if ( show == 1 ) {
-		jQuery('#nf-progress-id').show();
-		jQuery('#nf-progress-gif').hide();
+		jQuery('#nf-progress-id-' + count ).show();
+		jQuery('#nf-progress-gif-' + count ).hide();
 	} else {
-		jQuery('#nf-progress-id').hide();
-		jQuery('#nf-progress-gif').show();
+		jQuery('#nf-progress-id-' + count ).hide();
+		jQuery('#nf-progress-gif-' + count ).show();
 	}
 
 }
@@ -724,10 +724,15 @@ function check_login_fields() {
 		alert( nfwi18n.select_when );
 		return false;
 	}
-
 	if ( document.bp_form.elements['nfw_options[bf_type]'].value == 0 ) {
-		if ( document.bp_form.elements['nfw_options[auth_name]'].value == '' && document.bp_form.elements['nfw_options[auth_pass]'].value == '' ) {
+		if ( document.bp_form.elements['nfw_options[auth_name]'].value == '' ||
+			document.bp_form.elements['nfw_options[auth_pass]'].value == '') {
+
 			alert( nfwi18n.missing_auth );
+			return false;
+		}
+		if ( document.bp_form.elements['nfw_options[auth_pass]'].value.length < 8 ) {
+			alert( nfwi18n.short_authpswd );
 			return false;
 		}
 	}
@@ -743,7 +748,7 @@ function nfwjs_check_key() {
 	if ( pubkey == '' ) {
 		return false;
 	}
-	if (! pubkey.match( /^[a-f0-9]{40}:(?:[a-f0-9:.]{3,39}|\*)$/) ) {
+	if (! pubkey.match( /^[a-f0-9]{40,64}:(?:[a-f0-9:.]{3,39}|\*)$/) ) {
 		jQuery('#clogs-pubkey').focus();
 		alert( nfwi18n.invalid_key );
 		return false;

@@ -675,8 +675,8 @@ function nfw_garbage_collector() {
 			if ( $now - $match[1] > 86400 ) {
 				// Backup the configuration
 				$nfw_rules = nfw_get_option('nfw_rules');
-				if ( file_exists( $path .'/bf_conf.php') ) {
-					$bd_data = json_encode( file_get_contents( $path .'/bf_conf.php') );
+				if ( is_file("$path/login_protection.php") ) {
+					$bd_data = json_encode( file_get_contents("$path/login_protection.php") );
 				} else {
 					$bd_data = '';
 				}
@@ -705,8 +705,8 @@ function nfw_garbage_collector() {
 		if ( empty( $nfw_rules ) ) {
 			return;
 		}
-		if ( file_exists( $path .'/bf_conf.php') ) {
-			$bd_data = json_encode( file_get_contents( $path .'/bf_conf.php') );
+		if ( is_file("$path/login_protection.php") ) {
+			$bd_data = json_encode( file_get_contents("$path/login_protection.php") );
 		} else {
 			$bd_data = '';
 		}
@@ -750,21 +750,16 @@ function nfw_log_error( $message ) {
 
 function nfw_admin_notice() {
 
-	// Warn about Site Health if needed
-	if ( strpos( $_SERVER['SCRIPT_NAME'], '/wp-admin/site-health.php') !== FALSE ) {
-		// This bug was fixed in WordPress 5.6.1
-		global $wp_version;
-		if ( version_compare( $wp_version, '5.6.1', '<') ) {
-			if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php') ) {
-				include NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php';
-				if (! empty( $bf_enable ) ) {
-					echo '<div class="notice-warning notice is-dismissible"><p>'. __('Warning: Because NinjaFirewall\'s Login Protection is enabled, Site Health may return an error message regarding the loopback test (e.g., 404 or 401 HTTP status code). You can safely ignore it.', 'ninjafirewall') .'</p></div>';
-				}
-			}
-		}
-	}
+	/**
+	 * Display a warning and returned an error if:
+	 * - The firewall is not enabled.
+	 * - The log dir does not exist or is not writable.
+	 */
 
-	if (nf_not_allowed( 0, __LINE__ ) ) { return; }
+	// We don't display any fatal error message to users
+	if ( nf_not_allowed( 0, __LINE__ ) ) {
+		return;
+	}
 
 	if (! defined('NF_DISABLED') ) {
 		is_nfw_enabled();
@@ -804,7 +799,7 @@ function nfw_admin_notice() {
 		$msg = __('unknown error', 'ninjafirewall') . ' #' . NF_DISABLED;
 	}
 	echo '<div class="error notice is-dismissible"><p><strong>' . __('NinjaFirewall fatal error:', 'ninjafirewall') . '</strong> ' . $msg .
-		'. ' . __('Review your installation, your site is not protected.', 'ninjafirewall') . '</p></div>';
+		' '. __('Review your installation, your site is not protected.', 'ninjafirewall') . '</p></div>';
 }
 
 add_action('admin_head', 'nfw_hide_admin_notices');
@@ -987,13 +982,24 @@ function nfwhook_rest_request_before_callbacks( $res, $hnd, $req ) {
 	if (! defined('NF_DISABLED') ) {
 		is_nfw_enabled();
 	}
-	if ( NF_DISABLED ) { return $res; }
+	if ( NF_DISABLED ) {
+		return $res;
+	}
 
 	$nfw_options = nfw_get_option('nfw_options');
 
-	if (! empty( $nfw_options['enum_restapi']) ) {
+	if (! empty( $nfw_options['enum_restapi'] ) ) {
 
-		if ( strpos( $req->get_route(), '/wp/v2/users') !== false && ! current_user_can('list_users') ) {
+		/**
+		 * If the "Allow logged-in users to access the API" policy is enabled,
+		 * we allow the user to access it.
+		 */
+		if (! empty( $nfw_options['restapi_loggedin'] ) && is_user_logged_in() ) {
+			return $res;
+		}
+
+		if ( strpos( $req->get_route(), '/wp/v2/users') !== false &&
+			! current_user_can('list_users') ) {
 
 			NinjaFirewall_log::write(
 				'User enumeration scan (REST API)',
@@ -1001,12 +1007,16 @@ function nfwhook_rest_request_before_callbacks( $res, $hnd, $req ) {
 				NFWLOG_HIGH, 0, $nfw_options, NFW_LOG_DIR .'/nfwlog'
 			);
 
-			return new WP_Error('nfw_rest_api_access_restricted', __('Forbidden access', 'ninjafirewall'), array('status' => $nfw_options['ret_code']) );
+			return new WP_Error(
+				'nfw_rest_api_access_restricted',
+				__('Forbidden access', 'ninjafirewall'),
+				['status' => $nfw_options['ret_code'] ]
+			);
 		}
 	}
 	return $res;
 }
-add_filter('rest_request_before_callbacks', 'nfwhook_rest_request_before_callbacks', 999, 3);
+add_filter('rest_request_before_callbacks', 'nfwhook_rest_request_before_callbacks', 999, 3 );
 
 // ---------------------------------------------------------------------
 

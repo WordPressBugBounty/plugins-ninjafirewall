@@ -35,7 +35,7 @@ if ( isset( $_POST['nfw_options'] ) ) {
 	}
 	$res = nf_sub_options_save();
 	$nfw_options = nfw_get_option( 'nfw_options' );
-	if ($res) {
+	if ( $res ) {
 		echo '<div class="error notice is-dismissible"><p>' . $res . '.</p></div>';
 	} else {
 		echo '<div class="updated notice is-dismissible"><p>' . __('Your changes have been saved.', 'ninjafirewall') . '</p></div>';
@@ -244,25 +244,19 @@ function nf_sub_options_save() {
 		return NinjaFirewall_ImpExp::import( NFW_LOG_DIR . "/nfwlog/cache/$backup_file" );
 	}
 
-	if ( empty( $_POST['nfw_options']['enabled']) ) {
-		if (! empty($nfw_options['enabled']) ) {
-			// Alert the admin :
+	if ( empty( $_POST['nfw_options']['enabled'] ) ) {
+		if (! empty( $nfw_options['enabled'] ) ) {
+			// Alert the admin
 			NinjaFirewall_ImpExp::email_admin('disabled');
 		}
 		$nfw_options['enabled'] = 0;
-
-		// Disable brute-force protection
-		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php') ) {
-			rename(NFW_LOG_DIR .'/nfwlog/cache/bf_conf.php', NFW_LOG_DIR .'/nfwlog/cache/bf_conf_off.php');
-		}
+		// Disable the brute-force protection
+		NinjaFirewall_bruteforce::disable( NFW_LOG_DIR .'/nfwlog/cache');
 
 	} else {
 		$nfw_options['enabled'] = 1;
-
-		// Re-enable brute-force protection
-		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf_off.php') ) {
-			rename(NFW_LOG_DIR .'/nfwlog/cache/bf_conf_off.php', NFW_LOG_DIR .'/nfwlog/cache/bf_conf.php');
-		}
+		// Re-enable the brute-force protection
+		NinjaFirewall_bruteforce::enable( NFW_LOG_DIR .'/nfwlog/cache');
 	}
 
 	if ( (isset( $_POST['nfw_options']['ret_code'])) &&
