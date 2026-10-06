@@ -42,23 +42,23 @@ if (! empty( $wp_meta_boxes[$dashboard]['normal']['core'] ) ) {
 
 function nfw_stats_widget() {
 
-	$stat_file = NFW_LOG_DIR . '/nfwlog/stats_' . date( 'Y-m' ) . '.php';
-	if ( file_exists( $stat_file ) ) {
-		$nfw_stat = file_get_contents( $stat_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-		$nfw_stat = str_replace( '<?php exit; ?>', '', $nfw_stat );
-	} else {
-		$nfw_stat = '0:0:0:0:0:0:0:0:0:0';
-	}
-	list($tmp, $medium, $high, $critical) = explode(':', $nfw_stat . ':');
-	$medium		= (int) $medium;
-	$high			= (int) $high;
-	$critical	= (int) $critical;
-	$total 		= $critical + $high + $medium;
+	/**
+	 * Retrieve the stats.
+	 */
+	$nfw_stat = NinjaFirewall_log::read_stats( NFW_LOG_DIR .'/nfwlog/stats_'. date( 'Y-m' ) .'.php');
+	$medium   = $nfw_stat[ 1 ];
+	$high     = $nfw_stat[ 2 ];
+	$critical = $nfw_stat[ 3 ];
+
+	$medium   = (int) $medium;
+	$high     = (int) $high;
+	$critical = (int) $critical;
+	$total    = $critical + $high + $medium;
 	if ( $total ) {
-		$coef			= 100 / $total;
-		$critical	= round( $critical * $coef, 2);
-		$high			= round( $high * $coef, 2);
-		$medium		= round( $medium * $coef, 2);
+		$coef     = 100 / $total;
+		$critical = round( $critical * $coef, 2);
+		$high     = round( $high * $coef, 2);
+		$medium   = round( $medium * $coef, 2);
 	}
 	echo '
 	<table border="0" width="100%">

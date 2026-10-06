@@ -79,21 +79,20 @@ class NinjaFirewall_log {
 		/**
 		 * Update stats.
 		 */
-		if ( is_file( $stat_file ) ) {
-			$stats = file_get_contents( $stat_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-			$stats = str_replace('<?php exit; ?>', '', $stats );
-		} else {
-			$stats = '0:0:0:0:0:0:0:0:0:0';
+		$lock = fopen("$log/stats.lock", 'c');
+		if ( $lock ) {
+			if ( flock( $lock, LOCK_EX ) ) {
+				$stat_arr = self::read_stats( $stat_file );
+				$stat_arr[ $loglevel ]++;
+				@ file_put_contents(
+					$stat_file,
+					"<?php exit; ?>{$stat_arr[0]}:{$stat_arr[1]}:{$stat_arr[2]}:{$stat_arr[3]}:{$stat_arr[4]}:" .
+					"{$stat_arr[5]}:{$stat_arr[6]}:{$stat_arr[7]}:{$stat_arr[8]}:{$stat_arr[9]}"
+				);
+				flock( $lock, LOCK_UN );
+			}
+			fclose( $lock );
 		}
-		$stat_arr = explode(':', $stats .':');
-		++$stat_arr[ $loglevel ];
-
-		@ file_put_contents(
-			$stat_file,
-			"<?php exit; ?>{$stat_arr[0]}:{$stat_arr[1]}:{$stat_arr[2]}:{$stat_arr[3]}:{$stat_arr[4]}:" .
-			"{$stat_arr[5]}:{$stat_arr[6]}:{$stat_arr[7]}:{$stat_arr[8]}:{$stat_arr[9]}",
-			LOCK_EX
-		);
 
 		/**
 		 * Create the log if it doesn't exist.
@@ -165,6 +164,22 @@ class NinjaFirewall_log {
 		 * Return the incident ID that will be displayed to the user.
 		 */
 		return $incidentID;
+	}
+
+
+	/**
+	 * Read the firewall statistics file.
+	 */
+	public static function read_stats( $stat_file ) {
+
+		if ( is_file( $stat_file ) ) {
+			$stats = file_get_contents( $stat_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+			$stats = str_replace('<?php exit; ?>', '', $stats );
+		} else {
+			$stats = '0:0:0:0:0:0:0:0:0:0';
+		}
+		$stat_arr = explode(':', $stats .':');
+		return $stat_arr;
 	}
 
 }

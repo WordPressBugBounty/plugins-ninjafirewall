@@ -960,7 +960,7 @@ function nfwhook_rest_authentication_errors( $res ) {
 		);
 
 		return new WP_Error(
-			'nfw_rest_api_access_restricted',
+			'ninjafirewall_access_restricted',
 			esc_html__('Forbidden access', 'ninjafirewall'),
 			['status' => $nfw_options['ret_code'] ]
 		);
@@ -998,8 +998,19 @@ function nfwhook_rest_request_before_callbacks( $res, $hnd, $req ) {
 			return $res;
 		}
 
-		if ( strpos( $req->get_route(), '/wp/v2/users') !== false &&
-			! current_user_can('list_users') ) {
+		/**
+		 * We don't want to block internal calls to the API, so we don't rely on $req->get_route().
+		 * See https://wordpress.org/support/topic/logged-in-whitelisted-allow-rest-for-logged-in-users/
+		 */
+		$requested_path = '';
+		// WordPress checks rest_route first, then REQUEST_URI.
+		if ( isset( $_REQUEST['rest_route'] ) ) {
+			$requested_path = NinjaFirewall_data::normalize( $_REQUEST['rest_route'], [] );
+		} elseif ( isset( $_SERVER['REQUEST_URI'] ) ) {
+			$requested_path = NinjaFirewall_data::normalize( $_SERVER['REQUEST_URI'], [] );
+		}
+
+		if ( stripos( $requested_path, '/wp/v2/users') !== false &&	! current_user_can('list_users') ) {
 
 			NinjaFirewall_log::write(
 				'User enumeration scan (REST API)',
@@ -1008,7 +1019,7 @@ function nfwhook_rest_request_before_callbacks( $res, $hnd, $req ) {
 			);
 
 			return new WP_Error(
-				'nfw_rest_api_access_restricted',
+				'ninjafirewall_access_restricted',
 				__('Forbidden access', 'ninjafirewall'),
 				['status' => $nfw_options['ret_code'] ]
 			);

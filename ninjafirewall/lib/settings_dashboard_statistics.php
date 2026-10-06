@@ -31,16 +31,18 @@ if ( empty( $_GET['statx'] ) || ! preg_match('/^\d{4}-\d{2}$/D', $_GET['statx'] 
 } else {
 	$statx = $_GET['statx'];
 }
-// Make sure the stat file exists:
-$stat_file = NFW_LOG_DIR . "/nfwlog/stats_{$statx}.php";
-// Parse it:
-if ( file_exists( $stat_file ) ) {
-	$nfw_stat = file_get_contents( $stat_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-	$nfw_stat = str_replace( '<?php exit; ?>', '', $nfw_stat );
-} else {
-	$nfw_stat = '0:0:0:0:0:0:0:0:0:0';
+
+/**
+ * Retrieve the stats.
+ */
+$nfw_stat = NinjaFirewall_log::read_stats( NFW_LOG_DIR ."/nfwlog/stats_{$statx}.php");
+$medium   = $nfw_stat[ 1 ];
+$high     = $nfw_stat[ 2 ];
+$critical = $nfw_stat[ 3 ];
+if (! $medium && ! $high && ! $critical ) {
 	goto NO_STATS;
 }
+
 // Look for the corresponding firewall log:
 $log_file = NFW_LOG_DIR . "/nfwlog/firewall_{$statx}.php";
 if ( file_exists( $log_file ) ) {
@@ -64,10 +66,10 @@ if ( file_exists( $log_file ) ) {
 }
 
 NO_STATS:
-list( $tmp, $medium, $high, $critical ) = explode( ':', $nfw_stat );
-$medium = (int) $medium;
-$high = (int) $high;
+$medium   = (int) $medium;
+$high     = (int) $high;
 $critical = (int) $critical;
+
 $total = $critical + $high + $medium;
 $c = $critical; $h = $high; $m = $medium;
 if ( $total == 1 ) { $fast = $slow; }

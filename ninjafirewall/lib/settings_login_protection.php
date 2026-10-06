@@ -27,7 +27,8 @@ if ( file_exists( NFW_LOG_DIR .'/nfwlog/cache/bf_conf.php') ) {
 
 echo '
 <div class="wrap">
-	<h1><img style="vertical-align:top" src="'. plugins_url( '/ninjafirewall/images/ninjafirewall_32.png' ) .'">&nbsp;' . __('Login Protection', 'ninjafirewall') . '</h1>';
+	<h1><img style="vertical-align:top" src="'. plugins_url( '/ninjafirewall/images/ninjafirewall_32.png' ) .
+	'">&nbsp;' . __('Login Protection', 'ninjafirewall') . '</h1>';
 
 // Saved ?
 if ( isset( $_POST['nfw_options'] ) ) {
@@ -142,6 +143,30 @@ if ( file_exists( NFW_LOG_DIR .'/nfwlog/cache/login_protection.php') ) {
 	$config['bf_nosig']     = 0;
 	$get_post               = 'POST';
 }
+
+/**
+ * Make sure gd_info() and imagettftext() are loaded.
+ */
+$captcha_disabled = '';
+if (! function_exists('gd_info') ) {
+	$captcha_disabled = ' disabled="disabled"';
+	echo '<div class="error notice is-dismissible"><p>' .
+		sprintf(
+			esc_html__('Error: The PHP %s function doesn\'t exist, the captcha protection is not available.',
+			'ninjafirewall'), 'gd_info()'
+		) .'</p></div>';
+	$config['bf_type'] = 0;
+}
+if (! function_exists('imagettftext') ) {
+	$captcha_disabled = ' disabled="disabled"';
+	echo '<div class="error notice is-dismissible"><p>' .
+		sprintf(
+			esc_html__('Error: The PHP %s function doesn\'t exist, the captcha protection is not available.',
+			'ninjafirewall'),	'imagettftext()'
+		) .'</p></div>';
+	$config['bf_type'] = 0;
+}
+
 ?>
 <script type="text/javascript">
 	var bf_type = <?php echo $config['bf_type'] ?>;
@@ -188,19 +213,6 @@ if ( empty( $config['bf_enable'] ) ) {
 	}
 }
 
-// Make sure we can display the captcha with the GD extension:
-if ( function_exists( 'gd_info' ) ) {
-	$missing_gd = '';
-	$gd_disabled = '';
-} else {
-	$missing_gd = '<p class="description">' .
-		__( 'GD Support is not available on your server, the CAPTCHA option is disabled.', 'ninjafirewall' ) . '</p>';
-	$gd_disabled = ' disabled="disabled"';
-}
-if ( $gd_disabled && $config['bf_type'] == 1 ) {
-	echo '<div class="error notice is-dismissible"><p>' .
-		__('Error: GD Support is not available on your server, the captcha protection will not work!', 'ninjafirewall') .'</p></div>';
-}
 nfw_contextual_help();
 ?>
 <form method="post" name="bp_form" onSubmit="return check_login_fields();">
@@ -225,8 +237,7 @@ nfw_contextual_help();
 				<th scope="row" class="row-med"><?php _e('Type of protection', 'ninjafirewall') ?></th>
 				<td>
 					<p><label><input type="radio" name="nfw_options[bf_type]" value="0"<?php checked($config['bf_type'], 0) ?> onclick="nfwjs_toggle_table(bf_enable, 0);">&nbsp;<?php _e('Username + Password', 'ninjafirewall') ?></label></p>
-					<p><label><input type="radio" name="nfw_options[bf_type]" value="1"<?php checked($config['bf_type'], 1) ?> onclick="nfwjs_toggle_table(bf_enable, 1);"<?php echo $gd_disabled ?> />&nbsp;<?php _e('Captcha image', 'ninjafirewall') ?></label></p>
-					<?php echo $missing_gd ?>
+					<p><label><input type="radio" name="nfw_options[bf_type]" value="1"<?php checked($config['bf_type'], 1) ?> onclick="nfwjs_toggle_table(bf_enable, 1);"<?php echo $captcha_disabled ?> />&nbsp;<?php _e('Captcha image', 'ninjafirewall') ?></label></p>
 				</td>
 			</tr>
 			<tr>
@@ -398,14 +409,7 @@ function nf_sub_loginprot_save() {
 	}
 
 	$nfw_options = nfw_get_option('nfw_options');
-
-	/**
-	 * Get current configuration (mostly needed to retrieve 'auth_pass').
-	 */
 	$config = [];
-	if ( file_exists( NFW_LOG_DIR .'/nfwlog/cache/login_protection.php') ) {
-		$config = NinjaFirewall_bruteforce::read_config( NFW_LOG_DIR .'/nfwlog/cache/login_protection.php');
-	}
 
 	if ( empty( $_POST['ui_enabled'] ) ) {
 		$_POST['nfw_options']['bf_enable'] = 0;
